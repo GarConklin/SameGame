@@ -1,0 +1,31 @@
+services:
+  samegame:
+    build: .
+    container_name: samegame
+    ports:
+      - "0.0.0.0:8080:80"
+    environment:
+      - DB_HOST=db
+      - DB_USER=samegame
+      - DB_PASS=samegame123
+      - DB_NAME=samegame
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: samegame_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_DATABASE=samegame
+      - MYSQL_USER=samegame
+      - MYSQL_PASSWORD=samegame123
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    restart: unless-stopped
+
+volumes:
+  db_data:
+

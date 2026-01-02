@@ -1,0 +1,127 @@
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+
+require_once __DIR__ . '/config.php';
+
+$config = require __DIR__ . '/config.php';
+
+try {
+    $gameCode = strtoupper(trim($_GET['game_code'] ?? ''));
+    $session = urldecode(trim($_GET['session'] ?? ''));
+    
+    if (empty($gameCode) || empty($session)) {
+        throw new Exception("Game code and session are required");
+    }
+    
+    // Connect to database
+    $conn = new mysqli(
+        $config['db']['host'],
+        $config['db']['username'],
+        $config['db']['password'],
+        $config['db']['database']
+    );
+    
+    if ($conn->connect_error) {
+        throw new Exception("Database connection failed");
+    }
+    
+    // Get game state
+    $stmt = $conn->prepare(
+        "SELECT id, host_session, player2_session, player1_name, player2_name,
+                player1_score, player2_score, current_player, game_status,
+                moves_per_turn, current_move_count, num_tile_types, grid_width, grid_height, tile_set,
+                player1_grid, player2_grid
+         FROM samegame_games 
+         WHERE game_code = ? AND (host_session = ? OR player2_session = ?)"
+    );
+    $stmt->bind_param("sss", $gameCode, $session, $session);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        $conn->close();
+        http_response_code(404);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Game not found or invalid session'
+        ]);
+        exit;
+    }
+    
+    $game = $result->fetch_assoc();
+    $stmt->close();
+    
+    // Determine which player this session is
+    // Use strict comparison and trim to avoid whitespace issues
+    $hostSession = trim($game['host_session']);
+    $player2Session = trim($game['player2_session'] ?? '');
+    $session = trim($session);
+    
+    // Check which session matches
+    $matchesHost = ($hostSession === $session);
+    $matchesPlayer2 = ($player2Session === $session);
+    
+    if ($matchesHost) {
+        $playerNumber = 1;
+    } elseif ($matchesPlayer2) {
+        $playerNumber = 2;
+    } else {
+        // Fallback - shouldn't happen but log it
+        error_log("WARNING: Session doesn't match either player! host: '$hostSession', player2: '$player2Session', provided: '$session'");
+        $playerNumber = ($hostSession === $session) ? 1 : 2; // Original logic as fallback
+    }
+    
+    // Decode JSON grids
+    $player1Grid = $game['player1_grid'] ? json_decode($game['player1_grid'], true) : null;
+    $player2Grid = $game['player2_grid'] ? json_decode($game['player2_grid'], true) : null;
+    
+    // Debug logging
+    if ($player1Grid && is_array($player1Grid)) {
+        error_log("Get game state: Player 1 grid dimensions " . count($player1Grid) . "x" . (count($player1Grid[0] ?? [])));
+    }
+    if ($player2Grid && is_array($player2Grid)) {
+        error_log("Get game state: Player 2 grid dimensions " . count($player2Grid) . "x" . (count($player2Grid[0] ?? [])));
+    }
+    
+    $conn->close();
+    
+    // Return debug info in development (remove in production)
+    $debug = [
+        'host_session_length' => strlen($hostSession),
+        'player2_session_length' => strlen($player2Session),
+        'provided_session_length' => strlen($session),
+        'matches_host' => $matchesHost,
+        'matches_player2' => $matchesPlayer2
+    ];
+    
+    echo json_encode([
+        'success' => true,
+        'game_code' => $gameCode,
+        'player_number' => $playerNumber,
+        'player1_name' => $game['player1_name'],
+        'player2_name' => $game['player2_name'],
+        'player1_score' => (int)$game['player1_score'],
+        'player2_score' => (int)$game['player2_score'],
+        'current_player' => (int)$game['current_player'],
+        'game_status' => $game['game_status'],
+        'moves_per_turn' => (int)$game['moves_per_turn'],
+        'current_move_count' => (int)$game['current_move_count'],
+        'num_tile_types' => (int)$game['num_tile_types'],
+        'grid_width' => (int)$game['grid_width'],
+        'grid_height' => (int)$game['grid_height'],
+        'tile_set' => $game['tile_set'] ?? 'Letters',
+        'your_grid' => $playerNumber === 1 ? $player1Grid : $player2Grid,
+        'opponent_score' => $playerNumber === 1 ? (int)$game['player2_score'] : (int)$game['player1_score'],
+        'debug' => $debug // Remove this in production
+    ]);
+    
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
+}
+

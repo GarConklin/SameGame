@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SameGame - Playing</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameHeader">
+            <div id="playerInfo">
+                <div id="currentPlayerDisplay"></div>
+                <div id="scoresDisplay"></div>
+            </div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="infoBar">
+            <input type="text" id="infoText" readonly>
+            <button id="newGameBtn" style="display:none;">New Game</button>
+        </div>
+    </div>
+
+    <div id="waitingModal" class="modal">
+        <div class="modal-content">
+            <h2>Waiting for Opponent</h2>
+            <p id="waitingText">Waiting for your opponent to finish their turn...</p>
+        </div>
+    </div>
+
+    <div id="resultsModal" class="modal">
+        <div class="modal-content">
+            <h2>Game Complete!</h2>
+            <div id="resultsContent"></div>
+            <button id="playAgainBtn">Play Again</button>
+            <button id="backToLobbyBtn">Back to Lobby</button>
+        </div>
+    </div>
+
+    <script src="js/samegame-multiplayer.js"></script>
+</body>
+</html>
+

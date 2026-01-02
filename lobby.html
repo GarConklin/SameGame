@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SameGame - Lobby</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/lobby.css">
+</head>
+<body>
+    <div id="lobbyContainer">
+        <h1>SameGame - Two Player</h1>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="index.html" style="color: #666; text-decoration: none;">← Single Player Mode</a>
+        </div>
+        
+        <div id="createGameSection" class="lobby-section">
+            <h2>Create New Game</h2>
+            <input type="text" id="hostNameInput" placeholder="Your name" maxlength="50">
+            <label for="gridWidthInput">Grid Width (20-60):</label>
+            <input type="number" id="gridWidthInput" min="20" max="60" style="width: 60px; margin-right: 15px;">
+            <label for="gridHeightInput">Grid Height (10-30):</label>
+            <input type="number" id="gridHeightInput" min="10" max="30" style="width: 60px; margin-right: 15px;">
+            <label for="movesPerTurnInput">Moves per turn (1-5):</label>
+            <input type="number" id="movesPerTurnInput" min="1" max="5" value="1" style="width: 60px; margin-right: 15px;">
+            <label for="numTileTypesInput">Tile Types (2-6):</label>
+            <input type="number" id="numTileTypesInput" min="2" max="6" style="width: 60px; margin-right: 15px;">
+            <label for="tileSetSelect">Tile Set:</label>
+            <select id="tileSetSelect" style="width: 100px; margin-bottom: 10px;">
+                <option value="Letters">Letters</option>
+                <option value="Numbers">Numbers</option>
+                <option value="Dots">Dots</option>
+            </select>
+            <button id="createGameBtn">Create Game</button>
+            <div id="gameCodeDisplay" class="hidden">
+                <p>Share this code with your opponent:</p>
+                <div id="gameCode" class="code-display"></div>
+                <p id="waitingMessage">Waiting for player 2 to join...</p>
+            </div>
+        </div>
+        
+        <div class="divider">OR</div>
+        
+        <div id="joinGameSection" class="lobby-section">
+            <h2>Join Game</h2>
+            <input type="text" id="joinCodeInput" placeholder="Enter game code" maxlength="6" style="text-transform: uppercase;">
+            <input type="text" id="joinNameInput" placeholder="Your name" maxlength="50" value="Player 2">
+            <button id="joinGameBtn">Join Game</button>
+            <div id="joinError" class="error hidden"></div>
+        </div>
+    </div>
+
+    <script src="js/lobby.js"></script>
+</body>
+</html>
+

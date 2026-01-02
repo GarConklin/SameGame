@@ -1,0 +1,101 @@
+#lobbyContainer {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#lobbyContainer h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.lobby-section {
+    margin-bottom: 30px;
+}
+
+.lobby-section h2 {
+    color: #555;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.lobby-section input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+.lobby-section label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.lobby-section button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.lobby-section button:hover {
+    background-color: #45a049;
+}
+
+.lobby-section button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.divider {
+    text-align: center;
+    margin: 30px 0;
+    color: #999;
+    font-weight: bold;
+}
+
+.code-display {
+    font-size: 48px;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 8px;
+    color: #4CAF50;
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+}
+
+#waitingMessage {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+.error {
+    color: #d32f2f;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #ffebee;
+    border-radius: 4px;
+}
+
+.hidden {
+    display: none;
+}
+

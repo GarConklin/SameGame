@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SameGame - Single Player</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameSettings" style="margin-bottom: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+            <label for="gridWidthInput">Grid Width (20-60):</label>
+            <input type="number" id="gridWidthInput" min="20" max="60" style="width: 60px; margin-right: 15px;">
+            <label for="gridHeightInput">Grid Height (10-30):</label>
+            <input type="number" id="gridHeightInput" min="10" max="30" style="width: 60px; margin-right: 15px;">
+            <label for="tileTypesInput">Tile Types (2-6):</label>
+            <input type="number" id="tileTypesInput" min="2" max="6" style="width: 60px; margin-right: 15px;">
+            <label for="tileSetSelect">Tile Set:</label>
+            <select id="tileSetSelect" style="width: 100px; margin-right: 15px;">
+                <option value="Letters">Letters</option>
+                <option value="Numbers">Numbers</option>
+                <option value="Dots">Dots</option>
+            </select>
+            <button id="applySettingsBtn">Apply Settings</button>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="infoBar">
+            <input type="text" id="infoText" readonly>
+            <button id="newGameBtn">New Game</button>
+            <button id="replayBtn">Replay</button>
+            <button id="undoBtn">Undo</button>
+            <button id="highScoreBtn">High Scores</button>
+            <button id="setUserBtn">Set Username</button>
+        </div>
+    </div>
+
+    <div id="highScoreModal" class="modal">
+        <div class="modal-content">
+            <h2>High Scores</h2>
+            <div id="highScoreList"></div>
+            <button id="closeHighScoreBtn">Close</button>
+        </div>
+    </div>
+
+    <div id="usernameModal" class="modal">
+        <div class="modal-content">
+            <h2>Set Username</h2>
+            <input type="text" id="usernameInput" placeholder="Enter username">
+            <button id="saveUsernameBtn">Save</button>
+            <button id="cancelUsernameBtn">Cancel</button>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="lobby.html" style="color: #4CAF50; text-decoration: none; font-size: 18px;">→ Play Two-Player Mode</a>
+    </div>
+
+    <script src="js/samegame.js"></script>
+</body>
+</html>
+
