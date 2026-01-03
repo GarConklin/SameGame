@@ -1,7 +1,7 @@
 <?php
 /**
  * Simple Game Code Generator for SameGame
- * Generates 6-character codes (letters and numbers)
+ * Generates 4-character codes (letters and numbers)
  */
 
 class GameCodeGenerator {
@@ -12,7 +12,7 @@ class GameCodeGenerator {
     }
     
     /**
-     * Generate a unique 6-character game code
+     * Generate a unique 4-character game code
      */
     public function generateUniqueCode() {
         $maxAttempts = 50;
@@ -32,13 +32,13 @@ class GameCodeGenerator {
     }
     
     /**
-     * Generate a random 6-character code
+     * Generate a random 4-character code
      * Uses uppercase letters and numbers, excluding confusing characters (0, O, I, 1)
      */
     private function generateCode() {
         $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         $code = '';
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < 4; $i++) {
             $code .= $chars[random_int(0, strlen($chars) - 1)];
         }
         return $code;

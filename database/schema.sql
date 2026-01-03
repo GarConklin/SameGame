@@ -5,7 +5,7 @@ USE samegame;
 -- SameGame games table
 CREATE TABLE IF NOT EXISTS samegame_games (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    game_code VARCHAR(6) UNIQUE NOT NULL,
+    game_code VARCHAR(4) UNIQUE NOT NULL,
     host_session VARCHAR(64) NOT NULL,
     player2_session VARCHAR(64) NULL,
     player1_name VARCHAR(50) DEFAULT 'Player 1',
