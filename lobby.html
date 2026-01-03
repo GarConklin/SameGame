@@ -14,6 +14,16 @@
             <a href="index.html" style="color: #666; text-decoration: none;">← Single Player Mode</a>
         </div>
         
+        <div id="joinGameSection" class="lobby-section">
+            <h2>Join Game</h2>
+            <input type="text" id="joinCodeInput" placeholder="Enter game code" maxlength="6" style="text-transform: uppercase;">
+            <input type="text" id="joinNameInput" placeholder="Your name" maxlength="50">
+            <button id="joinGameBtn">Join Game</button>
+            <div id="joinError" class="error hidden"></div>
+        </div>
+        
+        <div class="divider">OR</div>
+        
         <div id="createGameSection" class="lobby-section">
             <h2>Create New Game</h2>
             <input type="text" id="hostNameInput" placeholder="Your name" maxlength="50">
@@ -37,16 +47,6 @@
                 <div id="gameCode" class="code-display"></div>
                 <p id="waitingMessage">Waiting for player 2 to join...</p>
             </div>
-        </div>
-        
-        <div class="divider">OR</div>
-        
-        <div id="joinGameSection" class="lobby-section">
-            <h2>Join Game</h2>
-            <input type="text" id="joinCodeInput" placeholder="Enter game code" maxlength="6" style="text-transform: uppercase;">
-            <input type="text" id="joinNameInput" placeholder="Your name" maxlength="50" value="Player 2">
-            <button id="joinGameBtn">Join Game</button>
-            <div id="joinError" class="error hidden"></div>
         </div>
     </div>
 

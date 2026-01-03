@@ -23,6 +23,25 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('gridHeightInput').value = savedHeight || 20;
     document.getElementById('numTileTypesInput').value = savedTileTypes || 5;
     document.getElementById('tileSetSelect').value = savedTileSet || 'Letters';
+    
+    // Save name to localStorage when user types in either name field
+    document.getElementById('hostNameInput').addEventListener('blur', (e) => {
+        const name = e.target.value.trim();
+        if (name) {
+            localStorage.setItem('samegame_username', name);
+            // Also update the join name field
+            document.getElementById('joinNameInput').value = name;
+        }
+    });
+    
+    document.getElementById('joinNameInput').addEventListener('blur', (e) => {
+        const name = e.target.value.trim();
+        if (name) {
+            localStorage.setItem('samegame_username', name);
+            // Also update the host name field
+            document.getElementById('hostNameInput').value = name;
+        }
+    });
 });
 
 document.getElementById('createGameBtn').addEventListener('click', createGame);
@@ -48,6 +67,12 @@ async function createGame() {
     
     btn.disabled = true;
     btn.textContent = 'Creating...';
+    
+    // Save player name to localStorage if provided
+    if (playerName && playerName !== 'Player 1') {
+        localStorage.setItem('samegame_username', playerName);
+        document.getElementById('joinNameInput').value = playerName;
+    }
     
     // Save tile set to localStorage
     localStorage.setItem('samegame_tile_set', tileSet);
@@ -133,6 +158,12 @@ async function joinGame() {
     btn.disabled = true;
     btn.textContent = 'Joining...';
     errorDiv.classList.add('hidden');
+    
+    // Save player name to localStorage if provided
+    if (playerName && playerName !== 'Player 2') {
+        localStorage.setItem('samegame_username', playerName);
+        document.getElementById('hostNameInput').value = playerName;
+    }
     
     try {
         const formData = new URLSearchParams();
