@@ -625,13 +625,35 @@ class SameGameMultiplayer {
                     // If game was restarted, reload the grid and close results modal
                     if (isRestarted) {
                         console.log('Game restarted - loading new grid');
+                        
+                        // Close results modal if open
+                        const resultsModal = document.getElementById('resultsModal');
+                        if (resultsModal) {
+                            resultsModal.style.display = 'none';
+                        }
+                        
+                        // Hide waiting modal
+                        const waitingModal = document.getElementById('waitingModal');
+                        if (waitingModal) {
+                            waitingModal.style.display = 'none';
+                        }
+                        
+                        // Reset play again button text if it was changed
+                        const playAgainBtn = document.getElementById('playAgainBtn');
+                        if (playAgainBtn) {
+                            playAgainBtn.disabled = false;
+                            playAgainBtn.textContent = 'Play Again';
+                        }
+                        
+                        // Clear dice modal flag so it shows again for the new game
+                        sessionStorage.removeItem(`dice_shown_${this.gameCode}`);
+                        
                         if (data.your_grid && Array.isArray(data.your_grid) && data.your_grid.length > 0) {
                             this.loadGrid(data.your_grid);
                             this.myScore = 0;
                             this.opponentScore = 0;
                             this.gameOver = false;
                             this.currentMoveCount = 0;
-                            document.getElementById('resultsModal').style.display = 'none';
                             this.updateUI();
                             this.paint();
                         }
