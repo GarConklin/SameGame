@@ -151,8 +151,7 @@ class SameGame {
             this.newGame();
         }
         
-        // Update info text to reflect username change
-        this.updateInfoText();
+        // Info text will be updated by paint/updateUI if needed
     }
     
     async loadImages() {
