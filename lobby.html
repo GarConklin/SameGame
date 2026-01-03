@@ -27,14 +27,29 @@
         <div id="createGameSection" class="lobby-section">
             <h2>Create New Game</h2>
             <input type="text" id="hostNameInput" placeholder="Your name" maxlength="50">
-            <label for="gridWidthInput">Grid Width (20-60):</label>
-            <input type="number" id="gridWidthInput" min="20" max="60" style="width: 60px; margin-right: 15px;">
-            <label for="gridHeightInput">Grid Height (10-30):</label>
-            <input type="number" id="gridHeightInput" min="10" max="30" style="width: 60px; margin-right: 15px;">
-            <label for="movesPerTurnInput">Moves per turn (1-5):</label>
-            <input type="number" id="movesPerTurnInput" min="1" max="5" value="1" style="width: 60px; margin-right: 15px;">
-            <label for="numTileTypesInput">Tile Types (2-6):</label>
-            <input type="number" id="numTileTypesInput" min="2" max="6" style="width: 60px; margin-right: 15px;">
+            
+            <div class="two-column-row">
+                <div class="form-column">
+                    <label for="gridWidthInput">Grid Width (20-60):</label>
+                    <input type="number" id="gridWidthInput" min="20" max="60">
+                </div>
+                <div class="form-column">
+                    <label for="gridHeightInput">Grid Height (10-30):</label>
+                    <input type="number" id="gridHeightInput" min="10" max="30">
+                </div>
+            </div>
+            
+            <div class="two-column-row">
+                <div class="form-column">
+                    <label for="movesPerTurnInput">Moves per turn (1-5):</label>
+                    <input type="number" id="movesPerTurnInput" min="1" max="5" value="1">
+                </div>
+                <div class="form-column">
+                    <label for="numTileTypesInput">Tile Types (2-6):</label>
+                    <input type="number" id="numTileTypesInput" min="2" max="6">
+                </div>
+            </div>
+            
             <label for="tileSetSelect">Tile Set:</label>
             <select id="tileSetSelect" style="width: 100px; margin-bottom: 10px;">
                 <option value="Letters">Letters</option>
