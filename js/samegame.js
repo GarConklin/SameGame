@@ -43,17 +43,20 @@ class SameGame {
         // Initialize grids
         this.initGrids();
         
-        // Load images and start game
-        this.loadImages().then(() => {
+        // Load tile sets and populate dropdown, then load images and start game
+        populateTileSetSelect(document.getElementById('tileSetSelect'), this.tileSet).then(() => {
             // Set input field values from loaded settings
             document.getElementById('gridWidthInput').value = this.gridWidth;
             document.getElementById('gridHeightInput').value = this.gridHeight;
             document.getElementById('tileTypesInput').value = this.numTileTypes;
             document.getElementById('tileSetSelect').value = this.tileSet;
             
-            this.newGame();
-            this.getHighScores();
-            this.setupEventListeners();
+            // Load images and start game
+            this.loadImages().then(() => {
+                this.newGame();
+                this.getHighScores();
+                this.setupEventListeners();
+            });
         });
     }
     
@@ -99,7 +102,8 @@ class SameGame {
         const width = Math.max(20, Math.min(60, newWidth));
         const height = Math.max(10, Math.min(30, newHeight));
         const tileTypes = Math.max(2, Math.min(6, newTileTypes));
-        const tileSet = ['Letters', 'Numbers', 'Dots', 'Animals'].includes(newTileSet) ? newTileSet : 'Letters';
+        // Validate tile set - accept any value (validation happens server-side for multiplayer)
+        const tileSet = newTileSet || 'Letters';
         
         // Check if tile set changed - need to reload images
         const tileSetChanged = this.tileSet !== tileSet;

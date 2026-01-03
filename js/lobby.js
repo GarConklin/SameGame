@@ -22,14 +22,16 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('gridWidthInput').value = savedWidth || 40;
     document.getElementById('gridHeightInput').value = savedHeight || 20;
     document.getElementById('numTileTypesInput').value = savedTileTypes || 5;
-    document.getElementById('tileSetSelect').value = savedTileSet || 'Letters';
     
-    // Load and display tile preview
-    updateTilePreview(savedTileSet || 'Letters');
-    
-    // Update tile preview when tile set changes
-    document.getElementById('tileSetSelect').addEventListener('change', (e) => {
-        updateTilePreview(e.target.value);
+    // Populate tile set dropdown and set saved value
+    populateTileSetSelect(document.getElementById('tileSetSelect'), savedTileSet || 'Letters').then(() => {
+        // Load and display tile preview
+        updateTilePreview(document.getElementById('tileSetSelect').value);
+        
+        // Update tile preview when tile set changes
+        document.getElementById('tileSetSelect').addEventListener('change', (e) => {
+            updateTilePreview(e.target.value);
+        });
     });
     
     // Save name to localStorage when user types in either name field

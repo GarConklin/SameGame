@@ -46,11 +46,24 @@ try {
     if ($gridHeight < 10) $gridHeight = 10;
     if ($gridHeight > 30) $gridHeight = 30;
     
-    // Get tile set (Letters, Numbers, Dots, or Animals, default Letters)
+    // Get tile set and validate it exists with all required files
     $tileSet = $_POST['tile_set'] ?? $_GET['tile_set'] ?? 'Letters';
-    $validTileSets = ['Letters', 'Numbers', 'Dots', 'Animals'];
-    if (!in_array($tileSet, $validTileSets)) {
-        $tileSet = 'Letters';
+    $tileSetDir = __DIR__ . '/../images/' . basename($tileSet);
+    $requiredFiles = ['A.gif', 'As.gif', 'B.gif', 'Bs.gif', 'C.gif', 'Cs.gif', 'D.gif', 'Ds.gif', 'E.gif', 'Es.gif', 'F.gif', 'Fs.gif'];
+    
+    // Validate tile set directory exists and has all required files
+    $isValid = is_dir($tileSetDir);
+    if ($isValid) {
+        foreach ($requiredFiles as $file) {
+            if (!file_exists($tileSetDir . '/' . $file)) {
+                $isValid = false;
+                break;
+            }
+        }
+    }
+    
+    if (!$isValid) {
+        $tileSet = 'Letters'; // Default fallback
     }
     
     // Generate session ID for host
