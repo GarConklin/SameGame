@@ -671,11 +671,25 @@ class SameGame {
             this.applySettings();
         });
         
-        // Update tile preview when tile set changes in setup modal
-        document.getElementById('tileSetSelect').addEventListener('change', (e) => {
+        // Update tile preview and game board when tile set changes in setup modal
+        document.getElementById('tileSetSelect').addEventListener('change', async (e) => {
+            const newTileSet = e.target.value;
+            
+            // Update tile preview
             if (typeof updateTilePreview === 'function') {
-                updateTilePreview(e.target.value);
+                updateTilePreview(newTileSet);
             }
+            
+            // Update game board immediately with new tile set
+            const oldTileSet = this.tileSet;
+            this.tileSet = newTileSet;
+            
+            // Reload images for new tile set
+            this.imagesLoaded = false;
+            await this.loadImages();
+            
+            // Reload the current grid with new tile images
+            this.paint();
         });
         
         // Buttons
@@ -747,9 +761,12 @@ function updateTilePreview(tileSet) {
     const imageNames = ['A', 'B', 'C', 'D', 'E', 'F'];
     const imagePath = `images/${tileSet}/`;
     
+    // Add cache-busting timestamp to force reload of updated images
+    const cacheBuster = '?v=' + Date.now();
+    
     imageNames.forEach((name, index) => {
         const img = document.createElement('img');
-        img.src = `${imagePath}${name}.gif`;
+        img.src = `${imagePath}${name}.gif${cacheBuster}`;
         img.alt = `Tile ${name}`;
         img.title = `Tile ${name}`;
         img.onerror = function() {
