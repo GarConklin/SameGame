@@ -577,14 +577,13 @@ class SameGameMultiplayer {
     
     async startPolling() {
         setInterval(async () => {
-            if (this.gameStatus === 'completed') return;
-            
             try {
                 const response = await fetch(`${API_BASE}/get-game-state.php?game_code=${encodeURIComponent(this.gameCode)}&session=${encodeURIComponent(this.session)}`);
                 const data = await response.json();
                 
                 if (data.success) {
                     const wasMyTurn = this.isMyTurn;
+                    const oldGameStatus = this.gameStatus; // Save old status before updating
                     this.currentPlayer = parseInt(data.current_player);
                     this.gameStatus = data.game_status;
                     this.playerNumber = parseInt(data.player_number); // Update from server, ensure int
@@ -596,7 +595,7 @@ class SameGameMultiplayer {
                     const newTileSet = data.tile_set || this.tileSet || 'Letters';
                     
                     // Check if game was restarted (status changed from completed to player1_turn or player2_turn)
-                    const wasCompleted = this.gameStatus === 'completed';
+                    const wasCompleted = (oldGameStatus === 'completed');
                     const isRestarted = wasCompleted && (data.game_status === 'player1_turn' || data.game_status === 'player2_turn');
                     
                     // Check if tile set changed (shouldn't happen, but handle it)
