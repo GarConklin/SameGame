@@ -845,6 +845,11 @@ class SameGameMultiplayer {
     
     async restartGame() {
         const btn = document.getElementById('playAgainBtn');
+        if (!btn) {
+            console.error('Play again button not found');
+            return;
+        }
+        
         const originalText = btn.textContent;
         btn.disabled = true;
         btn.textContent = 'Restarting...';
@@ -866,7 +871,19 @@ class SameGameMultiplayer {
             
             if (data.success) {
                 // Close results modal
-                document.getElementById('resultsModal').style.display = 'none';
+                const resultsModal = document.getElementById('resultsModal');
+                if (resultsModal) {
+                    resultsModal.style.display = 'none';
+                }
+                
+                // Hide waiting modal
+                const waitingModal = document.getElementById('waitingModal');
+                if (waitingModal) {
+                    waitingModal.style.display = 'none';
+                }
+                
+                // Clear dice modal flag so it shows again for the new game
+                sessionStorage.removeItem(`dice_shown_${this.gameCode}`);
                 
                 // Reset game state
                 this.myScore = 0;
@@ -880,6 +897,10 @@ class SameGameMultiplayer {
                 // Update UI
                 this.updateUI();
                 this.paint();
+                
+                // Reset button text in case it's still visible
+                btn.disabled = false;
+                btn.textContent = originalText;
             } else {
                 alert('Failed to restart game: ' + (data.error || 'Unknown error'));
                 btn.disabled = false;
