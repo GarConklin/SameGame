@@ -1,6 +1,9 @@
 // Lobby management for SameGame
 
-const API_BASE = window.location.origin + '/api';
+// Use API_BASE if already defined (e.g., from tile-set-loader.js), otherwise define it
+if (typeof API_BASE === 'undefined') {
+    var API_BASE = window.location.origin + '/api';
+}
 
 let checkInterval = null;
 
