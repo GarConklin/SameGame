@@ -696,10 +696,9 @@ class SameGameMultiplayer {
                     const diceModal = document.getElementById('diceRollModal');
                     if (diceModal && (this.gameStatus === 'player1_turn' || this.gameStatus === 'player2_turn')) {
                         const diceModalShown = sessionStorage.getItem(`dice_shown_${this.gameCode}`);
-                        // Close the modal if:
-                        // 1. It's been shown AND it's not our turn (first player has started)
-                        // 2. OR we just restarted (isRestarted is true) - close it after showing in restart block
-                        if (diceModalShown && (!this.isMyTurn || (isRestarted && data.player1_dice_roll !== null && data.player2_dice_roll !== null))) {
+                        // Close the modal if it's been shown and it's not our turn (first player has started)
+                        // This ensures player 1's modal closes when player 2 starts, and vice versa
+                        if (diceModalShown && !this.isMyTurn) {
                             diceModal.style.display = 'none';
                         }
                     }
