@@ -24,6 +24,14 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('numTileTypesInput').value = savedTileTypes || 5;
     document.getElementById('tileSetSelect').value = savedTileSet || 'Letters';
     
+    // Load and display tile preview
+    updateTilePreview(savedTileSet || 'Letters');
+    
+    // Update tile preview when tile set changes
+    document.getElementById('tileSetSelect').addEventListener('change', (e) => {
+        updateTilePreview(e.target.value);
+    });
+    
     // Save name to localStorage when user types in either name field
     document.getElementById('hostNameInput').addEventListener('blur', (e) => {
         const name = e.target.value.trim();
@@ -55,6 +63,31 @@ document.getElementById('hostNameInput').addEventListener('keypress', (e) => {
 document.getElementById('joinCodeInput').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') joinGame();
 });
+
+// Function to update tile preview
+function updateTilePreview(tileSet) {
+    const previewContainer = document.getElementById('tilePreview');
+    if (!previewContainer) return;
+    
+    // Clear existing preview
+    previewContainer.innerHTML = '';
+    
+    // Load and display first 6 tiles (A-F, which correspond to tile types 1-6)
+    const imageNames = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const imagePath = `images/${tileSet}/`;
+    
+    imageNames.forEach((name, index) => {
+        const img = document.createElement('img');
+        img.src = `${imagePath}${name}.gif`;
+        img.alt = `Tile ${name}`;
+        img.title = `Tile ${name}`;
+        img.onerror = function() {
+            // If image fails to load, remove it or show placeholder
+            this.style.display = 'none';
+        };
+        previewContainer.appendChild(img);
+    });
+}
 
 async function createGame() {
     const playerName = document.getElementById('hostNameInput').value.trim() || 'Player 1';

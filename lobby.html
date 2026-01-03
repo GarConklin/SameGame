@@ -50,12 +50,17 @@
                 </div>
             </div>
             
-            <label for="tileSetSelect">Tile Set:</label>
-            <select id="tileSetSelect" style="width: 100px; margin-bottom: 10px;">
-                <option value="Letters">Letters</option>
-                <option value="Numbers">Numbers</option>
-                <option value="Dots">Dots</option>
-            </select>
+            <div class="tile-set-container">
+                <div class="tile-set-select">
+                    <label for="tileSetSelect">Tile Set:</label>
+                    <select id="tileSetSelect" style="width: 100px; margin-bottom: 10px;">
+                        <option value="Letters">Letters</option>
+                        <option value="Numbers">Numbers</option>
+                        <option value="Dots">Dots</option>
+                    </select>
+                </div>
+                <div id="tilePreview" class="tile-preview"></div>
+            </div>
             <button id="createGameBtn">Create Game</button>
             <div id="gameCodeDisplay" class="hidden">
                 <p>Share this code with your opponent:</p>
