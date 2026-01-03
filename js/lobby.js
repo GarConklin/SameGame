@@ -4,7 +4,6 @@
 if (typeof window.API_BASE === 'undefined') {
     window.API_BASE = window.location.origin + '/api';
 }
-const API_BASE = window.API_BASE;
 
 let checkInterval = null;
 
@@ -133,7 +132,7 @@ async function createGame() {
         formData.append('num_tile_types', Math.max(2, Math.min(6, numTileTypes)));
         formData.append('tile_set', tileSet);
         
-        const response = await fetch(`${API_BASE}/create-game.php`, {
+        const response = await fetch(`${window.API_BASE}/create-game.php`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -177,7 +176,7 @@ async function checkForPlayer2() {
     if (!gameCode || !session) return;
     
     try {
-        const response = await fetch(`${API_BASE}/get-game-state.php?game_code=${gameCode}&session=${session}`);
+        const response = await fetch(`${window.API_BASE}/get-game-state.php?game_code=${gameCode}&session=${session}`);
         const data = await response.json();
         
         if (data.success && data.game_status !== 'waiting') {
@@ -217,7 +216,7 @@ async function joinGame() {
         formData.append('game_code', gameCode);
         formData.append('player_name', playerName);
         
-        const response = await fetch(`${API_BASE}/join-game.php`, {
+        const response = await fetch(`${window.API_BASE}/join-game.php`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

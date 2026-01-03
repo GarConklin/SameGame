@@ -4,14 +4,13 @@
 if (typeof window.API_BASE === 'undefined') {
     window.API_BASE = typeof window !== 'undefined' && window.location ? (window.location.origin + '/api') : '/api';
 }
-const API_BASE = window.API_BASE;
 
 /**
  * Get list of available tile sets from the server
  */
 async function getAvailableTileSets() {
     try {
-        const response = await fetch(`${API_BASE}/list-tile-sets.php`);
+        const response = await fetch(`${window.API_BASE}/list-tile-sets.php`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
