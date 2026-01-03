@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS samegame_games (
     player2_session VARCHAR(64) NULL,
     player1_name VARCHAR(50) DEFAULT 'Player 1',
     player2_name VARCHAR(50) DEFAULT 'Player 2',
+    player1_dice_roll INT NULL,
+    player2_dice_roll INT NULL,
     player1_score INT DEFAULT 0,
     player2_score INT DEFAULT 0,
     current_player INT DEFAULT 1,
