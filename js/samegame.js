@@ -642,6 +642,11 @@ class SameGame {
         document.getElementById('tileTypesInput').value = this.numTileTypes;
         document.getElementById('tileSetSelect').value = this.tileSet;
         
+        // Update tile preview with current tile set
+        if (typeof updateTilePreview === 'function') {
+            updateTilePreview(this.tileSet);
+        }
+        
         modal.style.display = 'block';
         usernameInput.focus();
     }
@@ -659,8 +664,12 @@ class SameGame {
             this.applySettings();
         });
         
-        // Remove auto-update on tile set change since it's now in a modal
-        // User will click Apply Settings to apply changes
+        // Update tile preview when tile set changes in setup modal
+        document.getElementById('tileSetSelect').addEventListener('change', (e) => {
+            if (typeof updateTilePreview === 'function') {
+                updateTilePreview(e.target.value);
+            }
+        });
         
         // Buttons
         document.getElementById('newGameBtn').addEventListener('click', () => {

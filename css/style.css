@@ -210,6 +210,26 @@ button:active {
     margin: 20px auto 0;
 }
 
+.tile-preview {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    min-height: 30px;
+}
+
+.tile-preview img {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
 #waitingText,
 #diceRollText {
     font-size: 18px;
