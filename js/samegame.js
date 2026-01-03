@@ -659,10 +659,8 @@ class SameGame {
             this.applySettings();
         });
         
-        // Auto-update when tile set changes
-        document.getElementById('tileSetSelect').addEventListener('change', () => {
-            this.applySettings();
-        });
+        // Remove auto-update on tile set change since it's now in a modal
+        // User will click Apply Settings to apply changes
         
         // Buttons
         document.getElementById('newGameBtn').addEventListener('click', () => {
@@ -707,28 +705,15 @@ class SameGame {
             document.getElementById('highScoreModal').style.display = 'none';
         });
         
-        // Username modal
-        document.getElementById('saveUsernameBtn').addEventListener('click', () => {
-            const input = document.getElementById('usernameInput');
-            this.userName = input.value || 'Player';
-            localStorage.setItem('samegame_username', this.userName);
-            document.getElementById('usernameModal').style.display = 'none';
-            this.paint();
-        });
-        
-        document.getElementById('cancelUsernameBtn').addEventListener('click', () => {
-            document.getElementById('usernameModal').style.display = 'none';
-        });
-        
         // Close modals when clicking outside
         window.addEventListener('click', (e) => {
             const highScoreModal = document.getElementById('highScoreModal');
-            const usernameModal = document.getElementById('usernameModal');
+            const setupModal = document.getElementById('setupModal');
             if (e.target === highScoreModal) {
                 highScoreModal.style.display = 'none';
             }
-            if (e.target === usernameModal) {
-                usernameModal.style.display = 'none';
+            if (e.target === setupModal) {
+                setupModal.style.display = 'none';
             }
         });
     }
