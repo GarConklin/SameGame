@@ -631,16 +631,23 @@ class SameGame {
         modal.style.display = 'block';
     }
     
-    showSetupModal() {
+    async showSetupModal() {
         const modal = document.getElementById('setupModal');
         const usernameInput = document.getElementById('usernameInput');
+        const tileSetSelect = document.getElementById('tileSetSelect');
+        
         usernameInput.value = this.userName;
+        
+        // Populate tile set select if not already populated
+        if (tileSetSelect.options.length === 0 && typeof populateTileSetSelect === 'function') {
+            await populateTileSetSelect(tileSetSelect, this.tileSet);
+        }
         
         // Set input field values from current settings
         document.getElementById('gridWidthInput').value = this.gridWidth;
         document.getElementById('gridHeightInput').value = this.gridHeight;
         document.getElementById('tileTypesInput').value = this.numTileTypes;
-        document.getElementById('tileSetSelect').value = this.tileSet;
+        tileSetSelect.value = this.tileSet;
         
         // Update tile preview with current tile set
         if (typeof updateTilePreview === 'function') {
@@ -726,6 +733,31 @@ class SameGame {
             }
         });
     }
+}
+
+// Function to update tile preview (shared with lobby.js functionality)
+function updateTilePreview(tileSet) {
+    const previewContainer = document.getElementById('tilePreview');
+    if (!previewContainer) return;
+    
+    // Clear existing preview
+    previewContainer.innerHTML = '';
+    
+    // Load and display first 6 tiles (A-F, which correspond to tile types 1-6)
+    const imageNames = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const imagePath = `images/${tileSet}/`;
+    
+    imageNames.forEach((name, index) => {
+        const img = document.createElement('img');
+        img.src = `${imagePath}${name}.gif`;
+        img.alt = `Tile ${name}`;
+        img.title = `Tile ${name}`;
+        img.onerror = function() {
+            // If image fails to load, remove it or show placeholder
+            this.style.display = 'none';
+        };
+        previewContainer.appendChild(img);
+    });
 }
 
 // Initialize game when page loads
