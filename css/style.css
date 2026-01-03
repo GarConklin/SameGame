@@ -196,12 +196,14 @@ button:active {
     border-radius: 4px;
 }
 
-#waitingModal .modal-content {
+#waitingModal .modal-content,
+#diceRollModal .modal-content {
     text-align: center;
     margin: 20px auto 0;
 }
 
-#waitingText {
+#waitingText,
+#diceRollText {
     font-size: 18px;
     color: #666;
     margin: 20px 0;

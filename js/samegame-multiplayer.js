@@ -200,7 +200,7 @@ class SameGameMultiplayer {
                     // Check if we've already shown the dice modal for this game
                     const diceModalShown = sessionStorage.getItem(`dice_shown_${this.gameCode}`);
                     if (!diceModalShown) {
-                        this.showDiceRollModal(data.player1_dice_roll, data.player2_dice_roll);
+                        this.showDiceRollModal(data.player1_dice_roll, data.player2_dice_roll, data.current_player);
                         sessionStorage.setItem(`dice_shown_${this.gameCode}`, 'true');
                     }
                 }
@@ -731,13 +731,16 @@ class SameGameMultiplayer {
         `;
     }
     
-    showDiceRollModal(player1Roll, player2Roll) {
+    showDiceRollModal(player1Roll, player2Roll, firstPlayer) {
         const player1Display = document.getElementById('player1DiceDisplay');
         const player2Display = document.getElementById('player2DiceDisplay');
         const winnerDisplay = document.getElementById('diceWinner');
+        const startButton = document.getElementById('closeDiceModalBtn');
         
         player1Display.textContent = `${this.player1Name}: ${player1Roll}`;
         player2Display.textContent = `${this.player2Name}: ${player2Roll}`;
+        
+        const isFirstPlayer = (this.playerNumber === firstPlayer);
         
         if (player1Roll > player2Roll) {
             winnerDisplay.textContent = `${this.player1Name} goes first!`;
@@ -748,6 +751,24 @@ class SameGameMultiplayer {
         } else {
             winnerDisplay.textContent = 'Tie! Rerolling...';
             winnerDisplay.style.color = '#ff9800';
+        }
+        
+        // Show "Start Game" button only for the first player, otherwise show waiting message
+        if (isFirstPlayer) {
+            startButton.style.display = 'inline-block';
+            winnerDisplay.textContent += ' (Click Start to begin)';
+        } else {
+            startButton.style.display = 'none';
+            // The modal will stay visible showing "Waiting for opponent" 
+            // The waiting modal logic will handle this, but we can also add a message here
+            const diceRollText = document.getElementById('diceRollText');
+            const waitingMsg = document.createElement('div');
+            waitingMsg.id = 'diceWaitingMsg';
+            waitingMsg.textContent = 'Waiting for opponent to start...';
+            waitingMsg.style.marginTop = '20px';
+            waitingMsg.style.fontSize = '16px';
+            waitingMsg.style.color = '#ff9800';
+            diceRollText.appendChild(waitingMsg);
         }
         
         document.getElementById('diceRollModal').style.display = 'block';
