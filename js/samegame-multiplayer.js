@@ -664,6 +664,11 @@ class SameGameMultiplayer {
                     const turnJustSwitched = !wasMyTurn && this.isMyTurn;
                     
                     if (this.gameStatus === 'completed') {
+                        // Hide waiting modal when game is completed
+                        const waitingModal = document.getElementById('waitingModal');
+                        if (waitingModal) {
+                            waitingModal.style.display = 'none';
+                        }
                         this.showResults();
                     } else if (turnJustSwitched) {
                         // It's now my turn - always reload the grid from server
@@ -801,24 +806,41 @@ class SameGameMultiplayer {
     }
     
     showResults() {
+        // Hide waiting modal when showing results
+        const waitingModal = document.getElementById('waitingModal');
+        if (waitingModal) {
+            waitingModal.style.display = 'none';
+        }
+        
+        // Hide dice modal if it's still open
+        const diceModal = document.getElementById('diceRollModal');
+        if (diceModal) {
+            diceModal.style.display = 'none';
+        }
+        
         const winner = this.myScore > this.opponentScore ? this.playerName : 
                       (this.opponentScore > this.myScore ? 
                        (this.playerNumber === 1 ? this.player2Name : this.player1Name) : null);
         
         const resultsContent = document.getElementById('resultsContent');
-        resultsContent.innerHTML = `
-            <div style="margin: 20px 0;">
-                <div style="font-size: 24px; margin-bottom: 20px;">
-                    ${winner ? `<strong>${winner} Wins!</strong>` : 'It\'s a Tie!'}
+        if (resultsContent) {
+            resultsContent.innerHTML = `
+                <div style="margin: 20px 0;">
+                    <div style="font-size: 24px; margin-bottom: 20px;">
+                        ${winner ? `<strong>${winner} Wins!</strong>` : 'It\'s a Tie!'}
+                    </div>
+                    <div style="font-size: 18px;">
+                        <div>${this.player1Name}: ${this.playerNumber === 1 ? this.myScore : this.opponentScore} points</div>
+                        <div>${this.player2Name}: ${this.playerNumber === 2 ? this.myScore : this.opponentScore} points</div>
+                    </div>
                 </div>
-                <div style="font-size: 18px;">
-                    <div>${this.player1Name}: ${this.playerNumber === 1 ? this.myScore : this.opponentScore} points</div>
-                    <div>${this.player2Name}: ${this.playerNumber === 2 ? this.myScore : this.opponentScore} points</div>
-                </div>
-            </div>
-        `;
+            `;
+        }
         
-        document.getElementById('resultsModal').style.display = 'block';
+        const resultsModal = document.getElementById('resultsModal');
+        if (resultsModal) {
+            resultsModal.style.display = 'block';
+        }
     }
     
     async restartGame() {

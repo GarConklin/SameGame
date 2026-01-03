@@ -91,7 +91,7 @@ try {
     $nextFirstPlayer = ($lastFirstPlayer === 1) ? 2 : 1;
     $gameStatus = ($nextFirstPlayer === 1) ? 'player1_turn' : 'player2_turn';
     
-    // Reset game state: scores, grids, turn, status
+    // Reset game state: scores, grids, turn, status, dice rolls
     $stmt = $conn->prepare(
         "UPDATE samegame_games 
          SET player1_score = 0,
@@ -100,7 +100,9 @@ try {
              player2_grid = ?,
              current_player = ?,
              current_move_count = 0,
-             game_status = ?
+             game_status = ?,
+             player1_dice_roll = NULL,
+             player2_dice_roll = NULL
          WHERE id = ?"
     );
     $stmt->bind_param("ssisi", $newGridJson, $newGridJson, $nextFirstPlayer, $gameStatus, $game['id']);
