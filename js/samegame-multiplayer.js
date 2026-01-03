@@ -194,6 +194,17 @@ class SameGameMultiplayer {
                     console.warn('Grid not available yet, will retry...');
                 }
                 
+                // Show dice roll modal if dice rolls are available and game just started
+                if (data.player1_dice_roll !== null && data.player2_dice_roll !== null && 
+                    (this.gameStatus === 'player1_turn' || this.gameStatus === 'player2_turn')) {
+                    // Check if we've already shown the dice modal for this game
+                    const diceModalShown = sessionStorage.getItem(`dice_shown_${this.gameCode}`);
+                    if (!diceModalShown) {
+                        this.showDiceRollModal(data.player1_dice_roll, data.player2_dice_roll);
+                        sessionStorage.setItem(`dice_shown_${this.gameCode}`, 'true');
+                    }
+                }
+                
                 // Hide waiting modal if it's our turn
                 if (this.isMyTurn) {
                     document.getElementById('waitingModal').style.display = 'none';
@@ -720,6 +731,28 @@ class SameGameMultiplayer {
         `;
     }
     
+    showDiceRollModal(player1Roll, player2Roll) {
+        const player1Display = document.getElementById('player1DiceDisplay');
+        const player2Display = document.getElementById('player2DiceDisplay');
+        const winnerDisplay = document.getElementById('diceWinner');
+        
+        player1Display.textContent = `${this.player1Name}: ${player1Roll}`;
+        player2Display.textContent = `${this.player2Name}: ${player2Roll}`;
+        
+        if (player1Roll > player2Roll) {
+            winnerDisplay.textContent = `${this.player1Name} goes first!`;
+            winnerDisplay.style.color = '#4CAF50';
+        } else if (player2Roll > player1Roll) {
+            winnerDisplay.textContent = `${this.player2Name} goes first!`;
+            winnerDisplay.style.color = '#4CAF50';
+        } else {
+            winnerDisplay.textContent = 'Tie! Rerolling...';
+            winnerDisplay.style.color = '#ff9800';
+        }
+        
+        document.getElementById('diceRollModal').style.display = 'block';
+    }
+    
     showResults() {
         const winner = this.myScore > this.opponentScore ? this.playerName : 
                       (this.opponentScore > this.myScore ? 
@@ -892,6 +925,10 @@ class SameGameMultiplayer {
         
         document.getElementById('backToLobbyBtn').addEventListener('click', () => {
             window.location.href = 'lobby.html';
+        });
+        
+        document.getElementById('closeDiceModalBtn').addEventListener('click', () => {
+            document.getElementById('diceRollModal').style.display = 'none';
         });
     }
 }

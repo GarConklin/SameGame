@@ -31,7 +31,7 @@ try {
         "SELECT id, host_session, player2_session, player1_name, player2_name,
                 player1_score, player2_score, current_player, game_status,
                 moves_per_turn, current_move_count, num_tile_types, grid_width, grid_height, tile_set,
-                player1_grid, player2_grid
+                player1_grid, player2_grid, player1_dice_roll, player2_dice_roll
          FROM samegame_games 
          WHERE game_code = ? AND (host_session = ? OR player2_session = ?)"
     );
@@ -114,6 +114,8 @@ try {
         'tile_set' => $game['tile_set'] ?? 'Letters',
         'your_grid' => $playerNumber === 1 ? $player1Grid : $player2Grid,
         'opponent_score' => $playerNumber === 1 ? (int)$game['player2_score'] : (int)$game['player1_score'],
+        'player1_dice_roll' => $game['player1_dice_roll'] !== null ? (int)$game['player1_dice_roll'] : null,
+        'player2_dice_roll' => $game['player2_dice_roll'] !== null ? (int)$game['player2_dice_roll'] : null,
         'debug' => $debug // Remove this in production
     ]);
     
