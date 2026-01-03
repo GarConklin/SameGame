@@ -46,9 +46,9 @@ try {
     if ($gridHeight < 10) $gridHeight = 10;
     if ($gridHeight > 30) $gridHeight = 30;
     
-    // Get tile set (Letters, Numbers, or Dots, default Letters)
+    // Get tile set (Letters, Numbers, Dots, or Animals, default Letters)
     $tileSet = $_POST['tile_set'] ?? $_GET['tile_set'] ?? 'Letters';
-    $validTileSets = ['Letters', 'Numbers', 'Dots'];
+    $validTileSets = ['Letters', 'Numbers', 'Dots', 'Animals'];
     if (!in_array($tileSet, $validTileSets)) {
         $tileSet = 'Letters';
     }

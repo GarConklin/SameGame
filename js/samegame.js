@@ -99,7 +99,7 @@ class SameGame {
         const width = Math.max(20, Math.min(60, newWidth));
         const height = Math.max(10, Math.min(30, newHeight));
         const tileTypes = Math.max(2, Math.min(6, newTileTypes));
-        const tileSet = ['Letters', 'Numbers', 'Dots'].includes(newTileSet) ? newTileSet : 'Letters';
+        const tileSet = ['Letters', 'Numbers', 'Dots', 'Animals'].includes(newTileSet) ? newTileSet : 'Letters';
         
         // Check if tile set changed - need to reload images
         const tileSetChanged = this.tileSet !== tileSet;
