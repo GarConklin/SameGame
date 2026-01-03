@@ -650,6 +650,16 @@ class SameGameMultiplayer {
                     if (data.player1_name) this.player1Name = data.player1_name;
                     if (data.player2_name) this.player2Name = data.player2_name;
                     
+                    // Check for dice roll modal on game start (check in polling too in case player 2 joins later)
+                    if (data.player1_dice_roll !== null && data.player2_dice_roll !== null && 
+                        (data.game_status === 'player1_turn' || data.game_status === 'player2_turn')) {
+                        const diceModalShown = sessionStorage.getItem(`dice_shown_${this.gameCode}`);
+                        if (!diceModalShown) {
+                            this.showDiceRollModal(data.player1_dice_roll, data.player2_dice_roll, data.current_player);
+                            sessionStorage.setItem(`dice_shown_${this.gameCode}`, 'true');
+                        }
+                    }
+                    
                     // Check if turn just switched to us - reload grid if it did
                     const turnJustSwitched = !wasMyTurn && this.isMyTurn;
                     
@@ -676,19 +686,15 @@ class SameGameMultiplayer {
                         this.updateUI();
                         this.paint();
                     } else if (wasMyTurn && !this.isMyTurn) {
-                        // Waiting for opponent
+                        // Our turn just ended - waiting for opponent
                         document.getElementById('waitingModal').style.display = 'block';
                         this.updateUI();
-                    } else if (wasMyTurn === this.isMyTurn && this.isMyTurn) {
-                        // Still our turn - update UI but don't reload grid unless it changed
+                    } else if (this.isMyTurn) {
+                        // It's our turn
                         document.getElementById('waitingModal').style.display = 'none';
                         this.updateUI();
-                        // Optionally reload grid if it's available and different (for debugging)
-                        if (data.your_grid && Array.isArray(data.your_grid) && data.your_grid.length > 0) {
-                            // Grid should be the same, but we could compare if needed
-                        }
                     } else {
-                        // Still waiting
+                        // Not our turn and wasn't our turn - waiting for opponent
                         document.getElementById('waitingModal').style.display = 'block';
                         this.updateUI();
                     }
