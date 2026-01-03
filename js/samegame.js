@@ -635,6 +635,11 @@ class SameGame {
             this.applySettings();
         });
         
+        // Auto-update when tile set changes
+        document.getElementById('tileSetSelect').addEventListener('change', () => {
+            this.applySettings();
+        });
+        
         // Buttons
         document.getElementById('newGameBtn').addEventListener('click', () => {
             this.newGame();
