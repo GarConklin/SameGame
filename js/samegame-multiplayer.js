@@ -648,6 +648,12 @@ class SameGameMultiplayer {
                         // Clear dice modal flag so it shows again for the new game
                         sessionStorage.removeItem(`dice_shown_${this.gameCode}`);
                         
+                        // Show dice roll modal if dice rolls are available (new game start)
+                        if (data.player1_dice_roll !== null && data.player2_dice_roll !== null) {
+                            this.showDiceRollModal(data.player1_dice_roll, data.player2_dice_roll, data.current_player);
+                            sessionStorage.setItem(`dice_shown_${this.gameCode}`, 'true');
+                        }
+                        
                         if (data.your_grid && Array.isArray(data.your_grid) && data.your_grid.length > 0) {
                             this.loadGrid(data.your_grid);
                             this.myScore = 0;
