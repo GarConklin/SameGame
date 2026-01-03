@@ -744,6 +744,11 @@ class SameGameMultiplayer {
                         this.updateUI();
                     } else {
                         // Not our turn and wasn't our turn - waiting for opponent
+                        // Close dice modal if it's still open (first player has started)
+                        const diceModal = document.getElementById('diceRollModal');
+                        if (diceModal) {
+                            diceModal.style.display = 'none';
+                        }
                         // Reload grid in case opponent just made a move
                         if (data.your_grid && Array.isArray(data.your_grid) && data.your_grid.length > 0) {
                             this.loadGrid(data.your_grid);
