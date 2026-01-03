@@ -686,7 +686,11 @@ class SameGameMultiplayer {
                         this.updateUI();
                         this.paint();
                     } else if (wasMyTurn && !this.isMyTurn) {
-                        // Our turn just ended - waiting for opponent
+                        // Our turn just ended - reload grid to see final state, then wait for opponent
+                        if (data.your_grid && Array.isArray(data.your_grid) && data.your_grid.length > 0) {
+                            this.loadGrid(data.your_grid);
+                            this.paint();
+                        }
                         document.getElementById('waitingModal').style.display = 'block';
                         this.updateUI();
                     } else if (this.isMyTurn) {
@@ -695,6 +699,11 @@ class SameGameMultiplayer {
                         this.updateUI();
                     } else {
                         // Not our turn and wasn't our turn - waiting for opponent
+                        // Reload grid in case opponent just made a move
+                        if (data.your_grid && Array.isArray(data.your_grid) && data.your_grid.length > 0) {
+                            this.loadGrid(data.your_grid);
+                            this.paint();
+                        }
                         document.getElementById('waitingModal').style.display = 'block';
                         this.updateUI();
                     }
