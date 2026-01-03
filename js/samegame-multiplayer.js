@@ -736,6 +736,12 @@ class SameGameMultiplayer {
         const player2Display = document.getElementById('player2DiceDisplay');
         const winnerDisplay = document.getElementById('diceWinner');
         const startButton = document.getElementById('closeDiceModalBtn');
+        const diceModal = document.getElementById('diceRollModal');
+        
+        if (!player1Display || !player2Display || !winnerDisplay || !diceModal) {
+            console.error('Dice roll modal elements not found');
+            return;
+        }
         
         player1Display.textContent = `${this.player1Name}: ${player1Roll}`;
         player2Display.textContent = `${this.player2Name}: ${player2Roll}`;
@@ -755,14 +761,18 @@ class SameGameMultiplayer {
         
         // Show "Start Game" button only for the first player, otherwise show waiting message
         if (isFirstPlayer) {
-            startButton.style.display = 'inline-block';
+            if (startButton) {
+                startButton.style.display = 'inline-block';
+            }
             // Remove any existing waiting message
             const existingWaitingMsg = document.getElementById('diceWaitingMsg');
             if (existingWaitingMsg) {
                 existingWaitingMsg.remove();
             }
         } else {
-            startButton.style.display = 'none';
+            if (startButton) {
+                startButton.style.display = 'none';
+            }
             // Add waiting message if it doesn't exist
             let waitingMsg = document.getElementById('diceWaitingMsg');
             if (!waitingMsg) {
@@ -773,11 +783,13 @@ class SameGameMultiplayer {
                 waitingMsg.style.fontSize = '16px';
                 waitingMsg.style.color = '#ff9800';
                 const diceRollText = document.getElementById('diceRollText');
-                diceRollText.appendChild(waitingMsg);
+                if (diceRollText) {
+                    diceRollText.appendChild(waitingMsg);
+                }
             }
         }
         
-        document.getElementById('diceRollModal').style.display = 'block';
+        diceModal.style.display = 'block';
     }
     
     showResults() {
@@ -954,12 +966,18 @@ class SameGameMultiplayer {
             window.location.href = 'lobby.html';
         });
         
-        document.getElementById('closeDiceModalBtn').addEventListener('click', () => {
-            // Close the dice modal
-            document.getElementById('diceRollModal').style.display = 'none';
-            // If it's the first player's turn, they've started the game
-            // The game should continue normally
-        });
+        const closeDiceBtn = document.getElementById('closeDiceModalBtn');
+        if (closeDiceBtn) {
+            closeDiceBtn.addEventListener('click', () => {
+                // Close the dice modal
+                const diceModal = document.getElementById('diceRollModal');
+                if (diceModal) {
+                    diceModal.style.display = 'none';
+                }
+                // If it's the first player's turn, they've started the game
+                // The game should continue normally
+            });
+        }
     }
 }
 
