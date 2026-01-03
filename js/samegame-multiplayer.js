@@ -507,19 +507,12 @@ class SameGameMultiplayer {
             if (hasMoves) break;
         }
         
-        // Check if player has used all their moves OR can't make any more moves
-        // After this move, currentMoveCount will be incremented, so check if currentMoveCount + 1 >= movesPerTurn
-        const movesAfterThis = this.currentMoveCount + 1;
-        const turnComplete = (movesAfterThis >= this.movesPerTurn) || !hasMoves;
-        
-        // If turn is complete (no moves left OR used all moves), submit score
-        if (turnComplete) {
-            this.gameOver = !hasMoves; // Game over only if no moves possible
-            this.paint();
-            // Submit score and switch to next player (or end game)
-            this.submitScore();
-        }
-        // If moves remain, player can continue their turn (no submission yet)
+        // Always submit the move to the server (server tracks move count)
+        // The server will determine if the turn is complete based on current_move_count
+        this.gameOver = !hasMoves; // Game over only if no moves possible
+        this.paint();
+        // Submit score after every move (server will track if turn is complete)
+        this.submitScore();
     }
     
     async submitScore() {
