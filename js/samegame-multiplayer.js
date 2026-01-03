@@ -756,19 +756,25 @@ class SameGameMultiplayer {
         // Show "Start Game" button only for the first player, otherwise show waiting message
         if (isFirstPlayer) {
             startButton.style.display = 'inline-block';
-            winnerDisplay.textContent += ' (Click Start to begin)';
+            // Remove any existing waiting message
+            const existingWaitingMsg = document.getElementById('diceWaitingMsg');
+            if (existingWaitingMsg) {
+                existingWaitingMsg.remove();
+            }
         } else {
             startButton.style.display = 'none';
-            // The modal will stay visible showing "Waiting for opponent" 
-            // The waiting modal logic will handle this, but we can also add a message here
-            const diceRollText = document.getElementById('diceRollText');
-            const waitingMsg = document.createElement('div');
-            waitingMsg.id = 'diceWaitingMsg';
-            waitingMsg.textContent = 'Waiting for opponent to start...';
-            waitingMsg.style.marginTop = '20px';
-            waitingMsg.style.fontSize = '16px';
-            waitingMsg.style.color = '#ff9800';
-            diceRollText.appendChild(waitingMsg);
+            // Add waiting message if it doesn't exist
+            let waitingMsg = document.getElementById('diceWaitingMsg');
+            if (!waitingMsg) {
+                waitingMsg = document.createElement('div');
+                waitingMsg.id = 'diceWaitingMsg';
+                waitingMsg.textContent = 'Waiting for opponent to start...';
+                waitingMsg.style.marginTop = '20px';
+                waitingMsg.style.fontSize = '16px';
+                waitingMsg.style.color = '#ff9800';
+                const diceRollText = document.getElementById('diceRollText');
+                diceRollText.appendChild(waitingMsg);
+            }
         }
         
         document.getElementById('diceRollModal').style.display = 'block';
@@ -949,7 +955,10 @@ class SameGameMultiplayer {
         });
         
         document.getElementById('closeDiceModalBtn').addEventListener('click', () => {
+            // Close the dice modal
             document.getElementById('diceRollModal').style.display = 'none';
+            // If it's the first player's turn, they've started the game
+            // The game should continue normally
         });
     }
 }
