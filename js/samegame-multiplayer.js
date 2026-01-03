@@ -691,6 +691,12 @@ class SameGameMultiplayer {
                     // Check if turn just switched to us - reload grid if it did
                     const turnJustSwitched = !wasMyTurn && this.isMyTurn;
                     
+                    // Close dice roll modal if it's open (should be closed when game starts)
+                    const diceModal = document.getElementById('diceRollModal');
+                    if (diceModal && (this.isMyTurn || this.gameStatus === 'player1_turn' || this.gameStatus === 'player2_turn')) {
+                        diceModal.style.display = 'none';
+                    }
+                    
                     if (this.gameStatus === 'completed') {
                         // Hide waiting modal when game is completed
                         const waitingModal = document.getElementById('waitingModal');
