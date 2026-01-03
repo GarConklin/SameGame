@@ -149,8 +149,8 @@ async function joinGame() {
     const btn = document.getElementById('joinGameBtn');
     const errorDiv = document.getElementById('joinError');
     
-    if (gameCode.length !== 6) {
-        errorDiv.textContent = 'Please enter a valid 6-character game code';
+    if (gameCode.length !== 4) {
+        errorDiv.textContent = 'Please enter a valid 4-character game code';
         errorDiv.classList.remove('hidden');
         return;
     }
