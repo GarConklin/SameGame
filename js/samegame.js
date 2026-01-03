@@ -665,6 +665,10 @@ class SameGame {
             this.showUsernameModal();
         });
         
+        document.getElementById('twoPlayerBtn').addEventListener('click', () => {
+            window.location.href = 'lobby.html';
+        });
+        
         // High score modal
         document.getElementById('closeHighScoreBtn').addEventListener('click', () => {
             document.getElementById('highScoreModal').style.display = 'none';
