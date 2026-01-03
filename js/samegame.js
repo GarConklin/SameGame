@@ -8,7 +8,7 @@ class SameGame {
         this.gridWidth = parseInt(localStorage.getItem('samegame_grid_width')) || 40;
         this.gridHeight = parseInt(localStorage.getItem('samegame_grid_height')) || 20;
         this.numTileTypes = parseInt(localStorage.getItem('samegame_tile_types')) || 5;
-        this.tileSet = localStorage.getItem('samegame_tile_set') || 'Letters';
+        this.tileSet = localStorage.getItem('samegame_tile_set') || 'Squares';
         this.imageWidth = 20;
         this.imageHeight = 20;
         
@@ -104,7 +104,7 @@ class SameGame {
         const height = Math.max(10, Math.min(30, newHeight));
         const tileTypes = Math.max(2, Math.min(6, newTileTypes));
         // Validate tile set - accept any value (validation happens server-side for multiplayer)
-        const tileSet = newTileSet || 'Letters';
+        const tileSet = newTileSet || 'Squares';
         
         // Save username if provided
         if (newUsername) {

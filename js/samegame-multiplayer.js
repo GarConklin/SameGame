@@ -21,7 +21,7 @@ class SameGameMultiplayer {
         // Game configuration (will be loaded from server)
         this.gridHeight = 20;
         this.gridWidth = 40;
-        this.tileSet = 'Letters'; // Will be loaded from server
+        this.tileSet = 'Squares'; // Will be loaded from server
         this.imageWidth = 20;
         this.imageHeight = 20;
         
@@ -140,7 +140,7 @@ class SameGameMultiplayer {
                 this.movesPerTurn = parseInt(data.moves_per_turn || 1);
                 this.currentMoveCount = parseInt(data.current_move_count || 0);
                 this.numTileTypes = parseInt(data.num_tile_types || 5);
-                const newTileSet = data.tile_set || 'Letters';
+                const newTileSet = data.tile_set || 'Squares';
                 
                 // Check if tile set changed - need to reload images
                 const tileSetChanged = this.tileSet !== newTileSet;
@@ -596,7 +596,7 @@ class SameGameMultiplayer {
                     this.movesPerTurn = parseInt(data.moves_per_turn || 1);
                     this.currentMoveCount = parseInt(data.current_move_count || 0);
                     this.numTileTypes = parseInt(data.num_tile_types || 5);
-                    const newTileSet = data.tile_set || this.tileSet || 'Letters';
+                    const newTileSet = data.tile_set || this.tileSet || 'Squares';
                     
                     // Check if game was restarted (status changed from completed to player1_turn or player2_turn)
                     const wasCompleted = (oldGameStatus === 'completed');

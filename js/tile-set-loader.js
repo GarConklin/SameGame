@@ -22,18 +22,18 @@ async function getAvailableTileSets() {
         
         // Fallback to common tile sets if API returns empty
         console.warn('API returned empty tile sets, using fallback');
-        return ['Letters', 'Numbers', 'Dots', 'Animals'];
+        return ['Squares', 'Letters', 'Numbers', 'Dots', 'Animals'];
     } catch (error) {
         console.error('Error fetching tile sets:', error);
         // Fallback to common tile sets if API fails completely
-        return ['Letters', 'Numbers', 'Dots', 'Animals'];
+        return ['Squares', 'Letters', 'Numbers', 'Dots', 'Animals'];
     }
 }
 
 /**
  * Populate a tile set select dropdown with available tile sets
  */
-async function populateTileSetSelect(selectElement, selectedValue = 'Letters') {
+async function populateTileSetSelect(selectElement, selectedValue = 'Squares') {
     if (!selectElement) {
         console.error('populateTileSetSelect: selectElement is null');
         return;
@@ -44,7 +44,7 @@ async function populateTileSetSelect(selectElement, selectedValue = 'Letters') {
         
         if (!Array.isArray(tileSets) || tileSets.length === 0) {
             console.error('No tile sets available');
-            tileSets = ['Letters']; // Emergency fallback
+            tileSets = ['Squares']; // Emergency fallback
         }
         
         // Clear existing options
@@ -69,7 +69,7 @@ async function populateTileSetSelect(selectElement, selectedValue = 'Letters') {
     } catch (error) {
         console.error('Error in populateTileSetSelect:', error);
         // Emergency fallback - add at least one option
-        selectElement.innerHTML = '<option value="Letters">Letters</option>';
-        selectElement.value = 'Letters';
+        selectElement.innerHTML = '<option value="Squares">Squares</option>';
+        selectElement.value = 'Squares';
     }
 }

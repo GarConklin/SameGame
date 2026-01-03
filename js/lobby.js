@@ -32,7 +32,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('numTileTypesInput').value = savedTileTypes || 5;
     
     // Populate tile set dropdown and set saved value
-    populateTileSetSelect(document.getElementById('tileSetSelect'), savedTileSet || 'Letters').then(() => {
+    populateTileSetSelect(document.getElementById('tileSetSelect'), savedTileSet || 'Squares').then(() => {
         // Load and display tile preview
         updateTilePreview(document.getElementById('tileSetSelect').value);
         
@@ -108,7 +108,7 @@ async function createGame() {
     const gridHeight = parseInt(document.getElementById('gridHeightInput').value) || 20;
     const movesPerTurn = parseInt(document.getElementById('movesPerTurnInput').value) || 1;
     const numTileTypes = parseInt(document.getElementById('numTileTypesInput').value) || 5;
-    const tileSet = document.getElementById('tileSetSelect').value || 'Letters';
+    const tileSet = document.getElementById('tileSetSelect').value || 'Squares';
     const btn = document.getElementById('createGameBtn');
     
     btn.disabled = true;
