@@ -3,7 +3,7 @@ services:
     build: .
     container_name: samegame
     ports:
-      - "0.0.0.0:8080:80"
+      - "0.0.0.0:8092:80"
     environment:
       - DB_HOST=db
       - DB_USER=samegame
