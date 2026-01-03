@@ -29,6 +29,8 @@ If you have existing game data you want to keep, you can run migrations instead:
    docker compose exec db mysql -uroot -prootpass samegame -e "ALTER TABLE samegame_games ADD COLUMN moves_per_turn INT DEFAULT 1 AFTER current_player;"
    docker compose exec db mysql -uroot -prootpass samegame -e "ALTER TABLE samegame_games ADD COLUMN current_move_count INT DEFAULT 0 AFTER moves_per_turn;"
    docker compose exec db mysql -uroot -prootpass samegame -e "ALTER TABLE samegame_games ADD COLUMN num_tile_types INT DEFAULT 5 AFTER current_move_count;"
+   docker compose exec db mysql -uroot -prootpass samegame -e "ALTER TABLE samegame_games ADD COLUMN player1_dice_roll INT NULL AFTER player2_name;"
+   docker compose exec db mysql -uroot -prootpass samegame -e "ALTER TABLE samegame_games ADD COLUMN player2_dice_roll INT NULL AFTER player1_dice_roll;"
    ```
 
 2. Open your browser and go to:
