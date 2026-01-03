@@ -78,9 +78,12 @@ function updateTilePreview(tileSet) {
     const imageNames = ['A', 'B', 'C', 'D', 'E', 'F'];
     const imagePath = `images/${tileSet}/`;
     
+    // Add cache-busting timestamp to force reload of updated images
+    const cacheBuster = '?v=' + Date.now();
+    
     imageNames.forEach((name, index) => {
         const img = document.createElement('img');
-        img.src = `${imagePath}${name}.gif`;
+        img.src = `${imagePath}${name}.gif${cacheBuster}`;
         img.alt = `Tile ${name}`;
         img.title = `Tile ${name}`;
         img.onerror = function() {
