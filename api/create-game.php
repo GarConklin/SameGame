@@ -63,13 +63,16 @@ try {
     // Set expiration (24 hours)
     $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
     
+    // Roll dice for player 1 (1-6)
+    $player1DiceRoll = rand(1, 6);
+    
     // Create game record
     $stmt = $conn->prepare(
         "INSERT INTO samegame_games 
-         (game_code, host_session, player1_name, game_status, moves_per_turn, num_tile_types, grid_width, grid_height, tile_set, expires_at) 
-         VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?, ?)"
+         (game_code, host_session, player1_name, game_status, moves_per_turn, num_tile_types, grid_width, grid_height, tile_set, player1_dice_roll, expires_at) 
+         VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?, ?, ?)"
     );
-    $stmt->bind_param("sssiiiiss", $gameCode, $hostSession, $playerName, $movesPerTurn, $numTileTypes, $gridWidth, $gridHeight, $tileSet, $expiresAt);
+    $stmt->bind_param("sssiiiisis", $gameCode, $hostSession, $playerName, $movesPerTurn, $numTileTypes, $gridWidth, $gridHeight, $tileSet, $player1DiceRoll, $expiresAt);
     
     if (!$stmt->execute()) {
         throw new Exception("Failed to create game: " . $conn->error);
@@ -89,7 +92,8 @@ try {
         'num_tile_types' => $numTileTypes,
         'grid_width' => $gridWidth,
         'grid_height' => $gridHeight,
-        'tile_set' => $tileSet
+        'tile_set' => $tileSet,
+        'dice_roll' => $player1DiceRoll
     ]);
     
 } catch (Exception $e) {
