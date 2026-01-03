@@ -6,9 +6,16 @@ let checkInterval = null;
 
 // Set default player name and game settings from localStorage
 window.addEventListener('DOMContentLoaded', () => {
-    const username = localStorage.getItem('samegame_username') || 'Player 2';
-    document.getElementById('hostNameInput').value = username;
-    document.getElementById('joinNameInput').value = username;
+    const username = localStorage.getItem('samegame_username');
+    const hostNameInput = document.getElementById('hostNameInput');
+    const joinNameInput = document.getElementById('joinNameInput');
+    
+    if (hostNameInput) {
+        hostNameInput.value = username || '';
+    }
+    if (joinNameInput) {
+        joinNameInput.value = username || '';
+    }
     
     // Load saved game settings from single player mode
     const savedWidth = localStorage.getItem('samegame_grid_width');
