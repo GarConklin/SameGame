@@ -1,9 +1,10 @@
 // Tile Set Loader - Dynamically detects and loads available tile sets
 
-// Use API_BASE if already defined (e.g., from lobby.js), otherwise define it
-if (typeof API_BASE === 'undefined') {
-    var API_BASE = typeof window !== 'undefined' && window.location ? (window.location.origin + '/api') : '/api';
+// Use window.API_BASE to avoid redeclaration conflicts
+if (typeof window.API_BASE === 'undefined') {
+    window.API_BASE = typeof window !== 'undefined' && window.location ? (window.location.origin + '/api') : '/api';
 }
+const API_BASE = window.API_BASE;
 
 /**
  * Get list of available tile sets from the server
