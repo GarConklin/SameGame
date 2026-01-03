@@ -198,6 +198,7 @@ button:active {
 
 #waitingModal .modal-content {
     text-align: center;
+    margin: 20px auto 0;
 }
 
 #waitingText {
