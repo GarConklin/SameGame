@@ -497,8 +497,9 @@ class SameGameMultiplayer {
         }
         
         // Check if player has used all their moves OR can't make any more moves
-        const movesRemaining = this.movesPerTurn - this.currentMoveCount - 1;
-        const turnComplete = (movesRemaining <= 0) || !hasMoves;
+        // After this move, currentMoveCount will be incremented, so check if currentMoveCount + 1 >= movesPerTurn
+        const movesAfterThis = this.currentMoveCount + 1;
+        const turnComplete = (movesAfterThis >= this.movesPerTurn) || !hasMoves;
         
         // If turn is complete (no moves left OR used all moves), submit score
         if (turnComplete) {
@@ -545,20 +546,24 @@ class SameGameMultiplayer {
             const data = await response.json();
             if (data.success) {
                 console.log('Score submitted successfully:', data);
+                
+                // Update move count from server response (server is the source of truth)
+                // Server returns moves_remaining, so current_move_count = movesPerTurn - moves_remaining
                 this.currentMoveCount = this.movesPerTurn - (data.moves_remaining || 0);
                 
                 if (data.game_complete) {
                     this.showResults();
                 } else if (data.turn_complete) {
+                    // Turn is complete - switch to other player
                     this.isMyTurn = false;
                     this.gameOver = false; // Reset for next player
-                    this.currentMoveCount = 0;
+                    this.currentMoveCount = 0; // Will be reset when it becomes our turn again
                     this.updateUI();
                     // Show waiting message
                     document.getElementById('waitingModal').style.display = 'block';
                 } else {
                     // More moves remaining in this turn
-                    this.currentMoveCount++;
+                    // currentMoveCount already updated from server response above
                     this.gameOver = false;
                     this.updateUI();
                 }
