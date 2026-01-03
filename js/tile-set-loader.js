@@ -38,7 +38,7 @@ async function populateTileSetSelect(selectElement, selectedValue = 'Letters') {
     }
     
     try {
-        const tileSets = await getAvailableTileSets();
+        let tileSets = await getAvailableTileSets();
         
         if (!Array.isArray(tileSets) || tileSets.length === 0) {
             console.error('No tile sets available');
