@@ -196,7 +196,14 @@ button:active {
     border-radius: 4px;
 }
 
-#waitingModal .modal-content,
+#waitingModal .modal-content {
+    text-align: center;
+    margin: 20px auto 0;
+    width: 60%;
+    max-width: 335px;
+    padding: 13px;
+}
+
 #diceRollModal .modal-content {
     text-align: center;
     margin: 20px auto 0;
