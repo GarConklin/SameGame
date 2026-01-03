@@ -97,6 +97,7 @@ class SameGame {
         const newHeight = parseInt(document.getElementById('gridHeightInput').value) || 20;
         const newTileTypes = parseInt(document.getElementById('tileTypesInput').value) || 5;
         const newTileSet = document.getElementById('tileSetSelect').value || 'Letters';
+        const newUsername = document.getElementById('usernameInput').value.trim();
         
         // Validate ranges
         const width = Math.max(20, Math.min(60, newWidth));
@@ -104,6 +105,12 @@ class SameGame {
         const tileTypes = Math.max(2, Math.min(6, newTileTypes));
         // Validate tile set - accept any value (validation happens server-side for multiplayer)
         const tileSet = newTileSet || 'Letters';
+        
+        // Save username if provided
+        if (newUsername) {
+            this.userName = newUsername;
+            localStorage.setItem('samegame_username', newUsername);
+        }
         
         // Check if tile set changed - need to reload images
         const tileSetChanged = this.tileSet !== tileSet;
@@ -126,6 +133,9 @@ class SameGame {
         document.getElementById('tileTypesInput').value = tileTypes;
         document.getElementById('tileSetSelect').value = tileSet;
         
+        // Close setup modal
+        document.getElementById('setupModal').style.display = 'none';
+        
         // Reinitialize grids and canvas
         this.setupCanvas();
         this.initGrids();
@@ -140,6 +150,9 @@ class SameGame {
             // Start new game with new settings
             this.newGame();
         }
+        
+        // Update info text to reflect username change
+        this.updateInfoText();
     }
     
     async loadImages() {
@@ -618,12 +631,19 @@ class SameGame {
         modal.style.display = 'block';
     }
     
-    showUsernameModal() {
-        const modal = document.getElementById('usernameModal');
-        const input = document.getElementById('usernameInput');
-        input.value = this.userName;
+    showSetupModal() {
+        const modal = document.getElementById('setupModal');
+        const usernameInput = document.getElementById('usernameInput');
+        usernameInput.value = this.userName;
+        
+        // Set input field values from current settings
+        document.getElementById('gridWidthInput').value = this.gridWidth;
+        document.getElementById('gridHeightInput').value = this.gridHeight;
+        document.getElementById('tileTypesInput').value = this.numTileTypes;
+        document.getElementById('tileSetSelect').value = this.tileSet;
+        
         modal.style.display = 'block';
-        input.focus();
+        usernameInput.focus();
     }
     
     setupEventListeners() {
@@ -670,8 +690,12 @@ class SameGame {
             }
         });
         
-        document.getElementById('setUserBtn').addEventListener('click', () => {
-            this.showUsernameModal();
+        document.getElementById('setupBtn').addEventListener('click', () => {
+            this.showSetupModal();
+        });
+        
+        document.getElementById('cancelSetupBtn').addEventListener('click', () => {
+            document.getElementById('setupModal').style.display = 'none';
         });
         
         document.getElementById('twoPlayerBtn').addEventListener('click', () => {
