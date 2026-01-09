@@ -943,23 +943,39 @@ class SameGameMultiplayer {
             if (this.timeRemaining <= 0) {
                 this.stopTimer();
                 // Prevent timer from restarting until move is complete
-                if (this.autoSelectEnabled && this.isMyTurn && this.theNumberSelected === 0 && !this.isAutoSelecting) {
-                    // Set flag to prevent timer restart during auto-select
-                    this.isAutoSelecting = true;
-                    // Auto-select and execute largest scoring group immediately
-                    // Use setTimeout to ensure timer is fully stopped before executing
-                    setTimeout(() => {
-                        if (this.isMyTurn && this.theNumberSelected === 0 && this.isAutoSelecting) {
-                            this.autoSelectLargestGroup(true); // Pass true to execute immediately
-                        }
-                    }, 100);
-                } else if (this.isMyTurn && this.theNumberSelected > 0 && !this.isAutoSelecting) {
-                    // If tiles are already selected, just execute the move
-                    setTimeout(() => {
-                        if (this.isMyTurn && this.theNumberSelected > 0) {
-                            this.secondClick();
-                        }
-                    }, 100);
+                if (this.isMyTurn && !this.isAutoSelecting) {
+                    if (this.theNumberSelected > 0) {
+                        // User has tiles selected - execute those tiles immediately
+                        console.log('Timer expired - executing user-selected tiles');
+                        // Set flag to prevent timer restart during move execution
+                        this.isAutoSelecting = true;
+                        setTimeout(() => {
+                            if (this.isMyTurn && this.theNumberSelected > 0) {
+                                console.log('Executing user-selected move on timer expiration');
+                                this.secondClick();
+                                // Clear flag after move completes
+                                setTimeout(() => {
+                                    this.isAutoSelecting = false;
+                                }, 200);
+                            } else {
+                                this.isAutoSelecting = false;
+                            }
+                        }, 100);
+                    } else if (this.autoSelectEnabled) {
+                        // No tiles selected but auto-select is enabled - auto-select largest group
+                        console.log('Timer expired - auto-selecting largest group');
+                        // Set flag to prevent timer restart during auto-select
+                        this.isAutoSelecting = true;
+                        // Auto-select and execute largest scoring group immediately
+                        // Use setTimeout to ensure timer is fully stopped before executing
+                        setTimeout(() => {
+                            if (this.isMyTurn && this.theNumberSelected === 0 && this.isAutoSelecting) {
+                                this.autoSelectLargestGroup(true); // Pass true to execute immediately
+                            } else {
+                                this.isAutoSelecting = false;
+                            }
+                        }, 100);
+                    }
                 }
             }
         }, 1000);
