@@ -126,6 +126,9 @@ class SameGameMultiplayer {
         await Promise.all(loadPromises);
         this.imagesLoaded = true;
         console.log(`Images loaded from tile set: ${this.tileSet}`, Object.keys(this.images));
+        
+        // Update multiplier display after images are loaded
+        this.updateMultiplierDisplay();
     }
     
     async loadGameState() {
@@ -711,6 +714,7 @@ class SameGameMultiplayer {
                         this.imagesLoaded = false;
                         this.loadImages().then(() => {
                             this.paint();
+                            this.updateMultiplierDisplay();
                         });
                     }
                     
@@ -1125,6 +1129,103 @@ class SameGameMultiplayer {
         return baseScore;
     }
     
+    updateMultiplierDisplay() {
+        const multiplierDisplay = document.getElementById('multiplierDisplay');
+        const multiplierList = document.getElementById('multiplierList');
+        
+        if (!multiplierDisplay || !multiplierList) {
+            return;
+        }
+        
+        // Show/hide multiplier display based on whether multipliers are enabled
+        if (this.tileTypeMultiplierEnabled && this.imagesLoaded) {
+            multiplierDisplay.style.display = 'block';
+            
+            // Clear existing content
+            multiplierList.innerHTML = '';
+            
+            // Get multipliers for the selected number of tile types
+            const allMultipliers = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25];
+            const multipliers = allMultipliers.slice(0, this.numTileTypes);
+            const tileNames = ['A', 'B', 'C', 'D', 'E', 'F'];
+            const imagePath = `images/${this.tileSet}/`;
+            
+            // Create display item for each tile type
+            for (let i = 0; i < this.numTileTypes; i++) {
+                const item = document.createElement('div');
+                item.style.display = 'inline-flex';
+                item.style.alignItems = 'center';
+                item.style.gap = '6px';
+                item.style.padding = '4px 8px';
+                item.style.backgroundColor = '#fff';
+                item.style.border = '1px solid #ddd';
+                item.style.borderRadius = '4px';
+                
+                // Create tile image
+                const tileWrapper = document.createElement('span');
+                tileWrapper.style.display = 'inline-flex';
+                tileWrapper.style.alignItems = 'center';
+                tileWrapper.style.justifyContent = 'center';
+                tileWrapper.style.width = '24px';
+                tileWrapper.style.height = '24px';
+                tileWrapper.style.position = 'relative';
+                
+                const img = document.createElement('img');
+                img.src = `${imagePath}${tileNames[i]}.gif`;
+                img.alt = `Tile ${tileNames[i]}`;
+                img.title = `Tile ${tileNames[i]} - ${multipliers[i]}x`;
+                img.style.width = '24px';
+                img.style.height = '24px';
+                img.style.imageRendering = 'pixelated';
+                img.style.imageRendering = '-moz-crisp-edges';
+                img.style.imageRendering = 'crisp-edges';
+                img.style.display = 'block';
+                img.style.border = '1px solid #ddd';
+                img.style.borderRadius = '2px';
+                
+                // Fallback if image fails to load
+                const fallback = document.createElement('span');
+                fallback.textContent = tileNames[i];
+                fallback.style.position = 'absolute';
+                fallback.style.fontSize = '12px';
+                fallback.style.fontWeight = 'bold';
+                fallback.style.color = '#333';
+                fallback.style.display = 'none';
+                fallback.style.width = '100%';
+                fallback.style.height = '100%';
+                fallback.style.alignItems = 'center';
+                fallback.style.justifyContent = 'center';
+                fallback.style.backgroundColor = '#f0f0f0';
+                fallback.style.border = '1px solid #ddd';
+                fallback.style.borderRadius = '2px';
+                
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    fallback.style.display = 'flex';
+                };
+                
+                img.onload = function() {
+                    fallback.style.display = 'none';
+                };
+                
+                tileWrapper.appendChild(img);
+                tileWrapper.appendChild(fallback);
+                
+                // Create multiplier text
+                const text = document.createElement('span');
+                text.textContent = `${tileNames[i]} = ${multipliers[i]}x`;
+                text.style.fontSize = '14px';
+                text.style.color = '#555';
+                
+                item.appendChild(tileWrapper);
+                item.appendChild(text);
+                multiplierList.appendChild(item);
+            }
+        } else {
+            multiplierDisplay.style.display = 'none';
+        }
+    }
+    
     updateUI() {
         const playerDisplay = document.getElementById('currentPlayerDisplay');
         const scoresDisplay = document.getElementById('scoresDisplay');
@@ -1167,6 +1268,9 @@ class SameGameMultiplayer {
             <div><strong>${this.player1Name}:</strong> ${this.playerNumber === 1 ? this.myScore : this.opponentScore}</div>
             <div><strong>${this.player2Name}:</strong> ${this.playerNumber === 2 ? this.myScore : this.opponentScore}</div>
         `;
+        
+        // Update multiplier display
+        this.updateMultiplierDisplay();
     }
     
     showDiceRollModal(player1Roll, player2Roll, firstPlayer) {
