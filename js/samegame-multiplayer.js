@@ -949,14 +949,18 @@ class SameGameMultiplayer {
                         console.log('Timer expired - executing user-selected tiles');
                         // Set flag to prevent timer restart during move execution
                         this.isAutoSelecting = true;
+                        // Store the selected count before secondClick clears it
+                        const selectedCount = this.theNumberSelected;
                         setTimeout(() => {
-                            if (this.isMyTurn && this.theNumberSelected > 0) {
+                            if (this.isMyTurn && selectedCount > 0) {
                                 console.log('Executing user-selected move on timer expiration');
+                                // Execute the move - secondClick will call submitScore
                                 this.secondClick();
-                                // Clear flag after move completes
+                                // Clear flag after submitScore completes (it's async, so wait longer)
+                                // submitScore calls updateUI which might restart timer, so keep flag set
                                 setTimeout(() => {
                                     this.isAutoSelecting = false;
-                                }, 200);
+                                }, 500); // Increased delay to ensure submitScore completes
                             } else {
                                 this.isAutoSelecting = false;
                             }
