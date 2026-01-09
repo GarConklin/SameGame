@@ -854,8 +854,8 @@ class SameGameMultiplayer {
                         document.getElementById('waitingModal').style.display = 'none';
                         this.updateUI();
                         
-                        // Ensure timer is running if enabled
-                        if (this.timerEnabled && !this.timerInterval) {
+                        // Ensure timer is running if enabled, but not if we're executing a timer-expired move
+                        if (this.timerEnabled && !this.timerInterval && !this.isAutoSelecting) {
                             this.startTimer();
                         }
                     } else {
