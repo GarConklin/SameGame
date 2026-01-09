@@ -26,16 +26,31 @@ try {
         throw new Exception("Database connection failed");
     }
     
-    // Get game state
-    $stmt = $conn->prepare(
-        "SELECT id, host_session, player2_session, player1_name, player2_name,
-                player1_score, player2_score, current_player, game_status,
-                moves_per_turn, current_move_count, num_tile_types, grid_width, grid_height, tile_set,
-                tile_type_multiplier_enabled, timer_enabled, timer_seconds, auto_select_enabled,
-                player1_grid, player2_grid, player1_dice_roll, player2_dice_roll
-         FROM samegame_games 
-         WHERE game_code = ? AND (host_session = ? OR player2_session = ?)"
-    );
+    // Check if new columns exist (for backward compatibility)
+    $result = $conn->query("SHOW COLUMNS FROM samegame_games LIKE 'tile_type_multiplier_enabled'");
+    $hasNewColumns = ($result && $result->num_rows > 0);
+    
+    // Get game state - use different SELECT based on whether new columns exist
+    if ($hasNewColumns) {
+        $stmt = $conn->prepare(
+            "SELECT id, host_session, player2_session, player1_name, player2_name,
+                    player1_score, player2_score, current_player, game_status,
+                    moves_per_turn, current_move_count, num_tile_types, grid_width, grid_height, tile_set,
+                    tile_type_multiplier_enabled, timer_enabled, timer_seconds, auto_select_enabled,
+                    player1_grid, player2_grid, player1_dice_roll, player2_dice_roll
+             FROM samegame_games 
+             WHERE game_code = ? AND (host_session = ? OR player2_session = ?)"
+        );
+    } else {
+        $stmt = $conn->prepare(
+            "SELECT id, host_session, player2_session, player1_name, player2_name,
+                    player1_score, player2_score, current_player, game_status,
+                    moves_per_turn, current_move_count, num_tile_types, grid_width, grid_height, tile_set,
+                    player1_grid, player2_grid, player1_dice_roll, player2_dice_roll
+             FROM samegame_games 
+             WHERE game_code = ? AND (host_session = ? OR player2_session = ?)"
+        );
+    }
     $stmt->bind_param("sss", $gameCode, $session, $session);
     $stmt->execute();
     $result = $stmt->get_result();

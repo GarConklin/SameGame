@@ -87,13 +87,32 @@ try {
     // Roll dice for player 1 (1-6)
     $player1DiceRoll = rand(1, 6);
     
-    // Create game record
-    $stmt = $conn->prepare(
-        "INSERT INTO samegame_games 
-         (game_code, host_session, player1_name, game_status, moves_per_turn, num_tile_types, grid_width, grid_height, tile_set, tile_type_multiplier_enabled, timer_enabled, timer_seconds, auto_select_enabled, player1_dice_roll, expires_at) 
-         VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-    );
-    $stmt->bind_param("sssiiiisiiiiis", $gameCode, $hostSession, $playerName, $movesPerTurn, $numTileTypes, $gridWidth, $gridHeight, $tileSet, $tileTypeMultiplierEnabled, $timerEnabled, $timerSeconds, $autoSelectEnabled, $player1DiceRoll, $expiresAt);
+    // Check if new columns exist (for backward compatibility with pre-migration databases)
+    $result = $conn->query("SHOW COLUMNS FROM samegame_games LIKE 'tile_type_multiplier_enabled'");
+    $hasNewColumns = ($result && $result->num_rows > 0);
+    
+    // Create game record - use different SQL based on whether new columns exist
+    if ($hasNewColumns) {
+        $stmt = $conn->prepare(
+            "INSERT INTO samegame_games 
+             (game_code, host_session, player1_name, game_status, moves_per_turn, num_tile_types, grid_width, grid_height, tile_set, tile_type_multiplier_enabled, timer_enabled, timer_seconds, auto_select_enabled, player1_dice_roll, expires_at) 
+             VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("sssiiiisiiiiis", $gameCode, $hostSession, $playerName, $movesPerTurn, $numTileTypes, $gridWidth, $gridHeight, $tileSet, $tileTypeMultiplierEnabled, $timerEnabled, $timerSeconds, $autoSelectEnabled, $player1DiceRoll, $expiresAt);
+    } else {
+        // Fallback for databases without the new columns (use defaults)
+        $stmt = $conn->prepare(
+            "INSERT INTO samegame_games 
+             (game_code, host_session, player1_name, game_status, moves_per_turn, num_tile_types, grid_width, grid_height, tile_set, player1_dice_roll, expires_at) 
+             VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("sssiiiisis", $gameCode, $hostSession, $playerName, $movesPerTurn, $numTileTypes, $gridWidth, $gridHeight, $tileSet, $player1DiceRoll, $expiresAt);
+        // Reset new options to defaults since columns don't exist
+        $tileTypeMultiplierEnabled = false;
+        $timerEnabled = false;
+        $timerSeconds = 60;
+        $autoSelectEnabled = false;
+    }
     
     if (!$stmt->execute()) {
         throw new Exception("Failed to create game: " . $conn->error);
