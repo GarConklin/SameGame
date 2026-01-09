@@ -26,6 +26,26 @@ This will:
 ### Running Migrations (only if you need to preserve existing data)
 If you have existing game data you want to keep, you can run migrations instead:
 
+**Version 1.1.0 Migration (Tile Multipliers, Timer, Auto-Select):**
+   ```bash
+   docker exec -i samegame_db mysql -uroot -prootpass samegame < database/migrations/add_game_options.sql
+   ```
+
+Or manually:
+   ```bash
+   docker exec -it samegame_db mysql -uroot -prootpass samegame
+   ```
+   Then run:
+   ```sql
+   ALTER TABLE samegame_games 
+   ADD COLUMN tile_type_multiplier_enabled BOOLEAN DEFAULT FALSE AFTER tile_set,
+   ADD COLUMN timer_enabled BOOLEAN DEFAULT FALSE AFTER tile_type_multiplier_enabled,
+   ADD COLUMN timer_seconds INT DEFAULT 60 AFTER timer_enabled,
+   ADD COLUMN auto_select_enabled BOOLEAN DEFAULT FALSE AFTER timer_seconds,
+   ADD INDEX idx_timer_enabled (timer_enabled);
+   ```
+
+**Previous Migrations:**
    docker compose exec db mysql -uroot -prootpass samegame -e "ALTER TABLE samegame_games ADD COLUMN moves_per_turn INT DEFAULT 1 AFTER current_player;"
    docker compose exec db mysql -uroot -prootpass samegame -e "ALTER TABLE samegame_games ADD COLUMN current_move_count INT DEFAULT 0 AFTER moves_per_turn;"
    docker compose exec db mysql -uroot -prootpass samegame -e "ALTER TABLE samegame_games ADD COLUMN num_tile_types INT DEFAULT 5 AFTER current_move_count;"

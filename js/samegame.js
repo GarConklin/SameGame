@@ -7,7 +7,7 @@ class SameGame {
         // Load saved settings from localStorage, or use defaults
         this.gridWidth = parseInt(localStorage.getItem('samegame_grid_width')) || 40;
         this.gridHeight = parseInt(localStorage.getItem('samegame_grid_height')) || 20;
-        this.numTileTypes = parseInt(localStorage.getItem('samegame_tile_types')) || 5;
+        this.numTileTypes = parseInt(localStorage.getItem('samegame_tile_types')) || 4;
         this.tileSet = localStorage.getItem('samegame_tile_set') || 'Squares';
         this.imageWidth = 20;
         this.imageHeight = 20;
@@ -95,8 +95,8 @@ class SameGame {
     applySettings() {
         const newWidth = parseInt(document.getElementById('gridWidthInput').value) || 40;
         const newHeight = parseInt(document.getElementById('gridHeightInput').value) || 20;
-        const newTileTypes = parseInt(document.getElementById('tileTypesInput').value) || 5;
-        const newTileSet = document.getElementById('tileSetSelect').value || 'Letters';
+        const newTileTypes = parseInt(document.getElementById('tileTypesInput').value) || 4;
+        const newTileSet = document.getElementById('tileSetSelect').value || 'Squares';
         const newUsername = document.getElementById('usernameInput').value.trim();
         
         // Validate ranges

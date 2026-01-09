@@ -31,6 +31,7 @@ try {
         "SELECT id, host_session, player2_session, player1_name, player2_name,
                 player1_score, player2_score, current_player, game_status,
                 moves_per_turn, current_move_count, num_tile_types, grid_width, grid_height, tile_set,
+                tile_type_multiplier_enabled, timer_enabled, timer_seconds, auto_select_enabled,
                 player1_grid, player2_grid, player1_dice_roll, player2_dice_roll
          FROM samegame_games 
          WHERE game_code = ? AND (host_session = ? OR player2_session = ?)"
@@ -111,7 +112,11 @@ try {
         'num_tile_types' => (int)$game['num_tile_types'],
         'grid_width' => (int)$game['grid_width'],
         'grid_height' => (int)$game['grid_height'],
-        'tile_set' => $game['tile_set'] ?? 'Letters',
+        'tile_set' => $game['tile_set'] ?? 'Squares',
+        'tile_type_multiplier_enabled' => (bool)($game['tile_type_multiplier_enabled'] ?? false),
+        'timer_enabled' => (bool)($game['timer_enabled'] ?? false),
+        'timer_seconds' => (int)($game['timer_seconds'] ?? 60),
+        'auto_select_enabled' => (bool)($game['auto_select_enabled'] ?? false),
         'your_grid' => $playerNumber === 1 ? $player1Grid : $player2Grid,
         'opponent_score' => $playerNumber === 1 ? (int)$game['player2_score'] : (int)$game['player1_score'],
         'player1_dice_roll' => $game['player1_dice_roll'] !== null ? (int)$game['player1_dice_roll'] : null,

@@ -46,7 +46,7 @@
                 </div>
                 <div class="form-column">
                     <label for="numTileTypesInput">Tile Types (2-6):</label>
-                    <input type="number" id="numTileTypesInput" min="2" max="6" value="5">
+                    <input type="number" id="numTileTypesInput" min="2" max="6" value="4">
                 </div>
             </div>
             
@@ -58,6 +58,36 @@
                 </div>
                 <div id="tilePreview" class="tile-preview"></div>
             </div>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc;">
+                <h3 style="margin-top: 0; margin-bottom: 10px;">Game Options</h3>
+                
+                <div style="margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="tileTypeMultiplierCheckbox" style="margin-right: 8px;">
+                        <span>Enable Tile Type Multipliers (A=1x, B=1.25x, C=1.5x, D=1.75x)</span>
+                    </label>
+                </div>
+                
+                <div style="margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="timerCheckbox" style="margin-right: 8px;">
+                        <span>Enable Turn Timer</span>
+                    </label>
+                    <div id="timerInputContainer" style="margin-left: 28px; margin-top: 5px; display: none;">
+                        <label for="timerSecondsInput">Timer (15-180 seconds):</label>
+                        <input type="number" id="timerSecondsInput" min="15" max="180" value="60" style="width: 80px;">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="autoSelectCheckbox" style="margin-right: 8px;">
+                        <span>Auto-select largest scoring group when timer expires</span>
+                    </label>
+                </div>
+            </div>
+            
             <button id="createGameBtn">Create Game</button>
             <div id="gameCodeDisplay" class="hidden">
                 <p>Share this code with your opponent:</p>

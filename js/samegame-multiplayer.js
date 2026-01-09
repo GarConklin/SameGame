@@ -36,7 +36,15 @@ class SameGameMultiplayer {
         this.gameStatus = 'waiting';
         this.movesPerTurn = 1;
         this.currentMoveCount = 0;
-        this.numTileTypes = 5; // Default to 5 (A-E)
+        this.numTileTypes = 4; // Default to 4 (A-D)
+        
+        // Game options
+        this.tileTypeMultiplierEnabled = false;
+        this.timerEnabled = false;
+        this.timerSeconds = 60;
+        this.autoSelectEnabled = false;
+        this.timerInterval = null;
+        this.timeRemaining = 0;
         
         // Player info
         this.player1Name = '';
@@ -139,8 +147,14 @@ class SameGameMultiplayer {
                 this.isMyTurn = (this.currentPlayer === this.playerNumber);
                 this.movesPerTurn = parseInt(data.moves_per_turn || 1);
                 this.currentMoveCount = parseInt(data.current_move_count || 0);
-                this.numTileTypes = parseInt(data.num_tile_types || 5);
+                this.numTileTypes = parseInt(data.num_tile_types || 4);
                 const newTileSet = data.tile_set || 'Squares';
+                
+                // Load game options
+                this.tileTypeMultiplierEnabled = data.tile_type_multiplier_enabled === true || data.tile_type_multiplier_enabled === 1;
+                this.timerEnabled = data.timer_enabled === true || data.timer_enabled === 1;
+                this.timerSeconds = parseInt(data.timer_seconds || 60);
+                this.autoSelectEnabled = data.auto_select_enabled === true || data.auto_select_enabled === 1;
                 
                 // Check if tile set changed - need to reload images
                 const tileSetChanged = this.tileSet !== newTileSet;
@@ -445,12 +459,17 @@ class SameGameMultiplayer {
     
     secondClick() {
         let numberRemoved = 0;
+        let tileType = -1; // Track which tile type is being removed
         
         for (let col = 0; col <= this.gridWidth; col++) {
             for (let row = 0; row <= this.gridHeight; row++) {
                 this.undoGrid[row][col] = this.fullGrid[row][col];
                 if (this.selectionGrid[row][col] === this.fullGrid[row][col] && 
                     this.selectionGrid[row][col] !== 10) {
+                    // Capture tile type from first removed tile
+                    if (tileType === -1) {
+                        tileType = this.fullGrid[row][col];
+                    }
                     this.fullGrid[row][col] = 10;
                     numberRemoved++;
                 }
@@ -466,15 +485,27 @@ class SameGameMultiplayer {
         this.theNumberSelected = 0;
         this.blocksFallNow();
         this.bringThemTogether();
-        this.updateScore(numberRemoved);
+        this.updateScore(numberRemoved, tileType);
+        
+        // Stop timer after a move
+        this.stopTimer();
     }
     
-    updateScore(numberRemoved) {
+    updateScore(numberRemoved, tileType = -1) {
         let newTotal = 2;
         let myCount = 2;
         while (myCount <= numberRemoved) {
             newTotal = newTotal + (myCount++ - 3) * 2 + 2;
         }
+        
+        // Apply tile type multiplier if enabled
+        if (this.tileTypeMultiplierEnabled && tileType >= 0 && tileType < this.numTileTypes) {
+            // Multipliers: A(0)=1.0x, B(1)=1.25x, C(2)=1.5x, D(3)=1.75x, E(4)=2.0x, F(5)=2.25x
+            const multipliers = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25];
+            const multiplier = multipliers[tileType] || 1.0;
+            newTotal = Math.floor(newTotal * multiplier);
+        }
+        
         this.myScore += newTotal;
         this.theLastValue = newTotal;
     }
@@ -570,6 +601,11 @@ class SameGameMultiplayer {
                     // currentMoveCount already updated from server response above
                     this.gameOver = false;
                     this.updateUI();
+                    
+                    // Restart timer if enabled and still our turn
+                    if (this.timerEnabled && this.isMyTurn) {
+                        this.startTimer();
+                    }
                 }
             } else {
                 console.error('Failed to submit score:', data.error);
@@ -595,8 +631,14 @@ class SameGameMultiplayer {
                     this.opponentScore = data.opponent_score;
                     this.movesPerTurn = parseInt(data.moves_per_turn || 1);
                     this.currentMoveCount = parseInt(data.current_move_count || 0);
-                    this.numTileTypes = parseInt(data.num_tile_types || 5);
+                    this.numTileTypes = parseInt(data.num_tile_types || 4);
                     const newTileSet = data.tile_set || this.tileSet || 'Squares';
+                    
+                    // Load game options
+                    this.tileTypeMultiplierEnabled = data.tile_type_multiplier_enabled === true || data.tile_type_multiplier_enabled === 1;
+                    this.timerEnabled = data.timer_enabled === true || data.timer_enabled === 1;
+                    this.timerSeconds = parseInt(data.timer_seconds || 60);
+                    this.autoSelectEnabled = data.auto_select_enabled === true || data.auto_select_enabled === 1;
                     
                     // Check if game was restarted (status changed from completed to player1_turn or player2_turn)
                     const wasCompleted = (oldGameStatus === 'completed');
@@ -730,6 +772,11 @@ class SameGameMultiplayer {
                         document.getElementById('waitingModal').style.display = 'none';
                         this.updateUI();
                         this.paint();
+                        
+                        // Start timer if enabled and it's our turn
+                        if (this.timerEnabled && this.isMyTurn) {
+                            this.startTimer();
+                        }
                     } else if (wasMyTurn && !this.isMyTurn) {
                         // Our turn just ended - reload grid to see final state, then wait for opponent
                         if (data.your_grid && Array.isArray(data.your_grid) && data.your_grid.length > 0) {
@@ -742,6 +789,11 @@ class SameGameMultiplayer {
                         // It's our turn
                         document.getElementById('waitingModal').style.display = 'none';
                         this.updateUI();
+                        
+                        // Ensure timer is running if enabled
+                        if (this.timerEnabled && !this.timerInterval) {
+                            this.startTimer();
+                        }
                     } else {
                         // Not our turn and wasn't our turn - waiting for opponent
                         // Close dice modal if it's still open (first player has started)
@@ -764,12 +816,177 @@ class SameGameMultiplayer {
         }, 2000);
     }
     
+    startTimer() {
+        if (!this.timerEnabled || !this.isMyTurn) {
+            return;
+        }
+        
+        this.stopTimer(); // Stop any existing timer
+        this.timeRemaining = this.timerSeconds;
+        const timerDisplay = document.getElementById('timerDisplay');
+        if (timerDisplay) {
+            timerDisplay.style.display = 'block';
+            timerDisplay.textContent = `Time: ${this.timeRemaining}s`;
+            timerDisplay.style.color = '#4CAF50'; // Green initially
+        }
+        
+        this.timerInterval = setInterval(() => {
+            this.timeRemaining--;
+            if (timerDisplay) {
+                if (this.timeRemaining <= 0) {
+                    timerDisplay.textContent = 'Time: 0s';
+                    timerDisplay.style.color = '#f44336'; // Red when expired
+                } else if (this.timeRemaining <= 10) {
+                    timerDisplay.textContent = `Time: ${this.timeRemaining}s`;
+                    timerDisplay.style.color = '#ff9800'; // Orange when low
+                } else {
+                    timerDisplay.textContent = `Time: ${this.timeRemaining}s`;
+                    timerDisplay.style.color = '#4CAF50'; // Green when good
+                }
+            }
+            
+            if (this.timeRemaining <= 0) {
+                this.stopTimer();
+                if (this.autoSelectEnabled && this.isMyTurn && this.theNumberSelected === 0) {
+                    // Auto-select largest scoring group
+                    this.autoSelectLargestGroup();
+                } else if (this.isMyTurn && this.theNumberSelected > 0) {
+                    // If tiles are already selected, just execute the move
+                    this.secondClick();
+                }
+            }
+        }, 1000);
+    }
+    
+    stopTimer() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+        const timerDisplay = document.getElementById('timerDisplay');
+        if (timerDisplay) {
+            timerDisplay.style.display = 'none';
+        }
+    }
+    
+    autoSelectLargestGroup() {
+        // Find all connected groups and calculate their scores
+        let bestGroup = null;
+        let bestScore = 0;
+        let bestTileType = -1;
+        
+        // Create a visited array to track which cells we've already checked
+        const visited = [];
+        for (let row = 0; row <= this.gridHeight; row++) {
+            visited[row] = [];
+            for (let col = 0; col <= this.gridWidth; col++) {
+                visited[row][col] = false;
+            }
+        }
+        
+        // Check every cell as a potential starting point for a group
+        for (let col = 0; col <= this.gridWidth; col++) {
+            for (let row = 0; row <= this.gridHeight; row++) {
+                if (visited[row][col] || this.fullGrid[row][col] === 10) {
+                    continue;
+                }
+                
+                // Find all connected tiles of the same type starting from this cell
+                const tileType = this.fullGrid[row][col];
+                const group = this.findConnectedGroup(col, row, tileType, visited);
+                
+                if (group.length >= 2) {
+                    // Calculate score for this group
+                    const score = this.calculateGroupScore(group.length, tileType);
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestGroup = group;
+                        bestTileType = tileType;
+                    }
+                }
+            }
+        }
+        
+        // Select the best group if found
+        if (bestGroup && bestTileType >= 0) {
+            // Clear current selection
+            for (let col = 0; col <= this.gridWidth; col++) {
+                for (let row = 0; row <= this.gridHeight; row++) {
+                    this.selectionGrid[row][col] = 10;
+                }
+            }
+            
+            // Mark all cells in the best group as selected
+            for (const cell of bestGroup) {
+                this.selectionGrid[cell.row][cell.col] = bestTileType;
+            }
+            
+            this.theNumberSelected = bestGroup.length;
+            this.paint();
+            
+            // Auto-execute the move after a short delay to show the selection
+            setTimeout(() => {
+                if (this.theNumberSelected > 0) {
+                    this.secondClick();
+                }
+            }, 500);
+        }
+    }
+    
+    findConnectedGroup(startCol, startRow, tileType, visited) {
+        const group = [];
+        const stack = [{col: startCol, row: startRow}];
+        
+        while (stack.length > 0) {
+            const {col, row} = stack.pop();
+            
+            if (row < 0 || row > this.gridHeight || col < 0 || col > this.gridWidth) {
+                continue;
+            }
+            
+            if (visited[row][col] || this.fullGrid[row][col] !== tileType) {
+                continue;
+            }
+            
+            visited[row][col] = true;
+            group.push({col, row});
+            
+            // Add neighbors to stack
+            if (row > 0) stack.push({col, row: row - 1});
+            if (row < this.gridHeight) stack.push({col, row: row + 1});
+            if (col > 0) stack.push({col: col - 1, row});
+            if (col < this.gridWidth) stack.push({col: col + 1, row});
+        }
+        
+        return group;
+    }
+    
+    calculateGroupScore(groupSize, tileType) {
+        // Calculate base score using same formula as updateScore
+        let baseScore = 2;
+        let myCount = 2;
+        while (myCount <= groupSize) {
+            baseScore = baseScore + (myCount++ - 3) * 2 + 2;
+        }
+        
+        // Apply tile type multiplier if enabled
+        if (this.tileTypeMultiplierEnabled && tileType >= 0 && tileType < this.numTileTypes) {
+            const multipliers = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25];
+            const multiplier = multipliers[tileType] || 1.0;
+            baseScore = baseScore * multiplier;
+        }
+        
+        return baseScore;
+    }
+    
     updateUI() {
         const playerDisplay = document.getElementById('currentPlayerDisplay');
         const scoresDisplay = document.getElementById('scoresDisplay');
         
         if (this.gameStatus === 'completed') {
             playerDisplay.textContent = 'Game Complete!';
+            this.stopTimer();
         } else if (this.isMyTurn) {
             const movesRemaining = this.movesPerTurn - this.currentMoveCount;
             if (movesRemaining > 1) {
@@ -778,9 +995,15 @@ class SameGameMultiplayer {
                 playerDisplay.textContent = `Your Turn - ${this.playerName} (last move)`;
             }
             playerDisplay.style.color = '#4CAF50';
+            
+            // Start timer if enabled and not already running
+            if (this.timerEnabled && !this.timerInterval) {
+                this.startTimer();
+            }
         } else {
             playerDisplay.textContent = `Waiting for ${this.playerNumber === 1 ? this.player2Name : this.player1Name}...`;
             playerDisplay.style.color = '#ff9800';
+            this.stopTimer();
         }
         
         scoresDisplay.innerHTML = `

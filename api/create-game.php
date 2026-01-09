@@ -32,8 +32,8 @@ try {
     if ($movesPerTurn < 1) $movesPerTurn = 1;
     if ($movesPerTurn > 5) $movesPerTurn = 5;
     
-    // Get number of tile types (2-6, default 5)
-    $numTileTypes = (int)($_POST['num_tile_types'] ?? $_GET['num_tile_types'] ?? 5);
+    // Get number of tile types (2-6, default 4)
+    $numTileTypes = (int)($_POST['num_tile_types'] ?? $_GET['num_tile_types'] ?? 4);
     if ($numTileTypes < 2) $numTileTypes = 2;
     if ($numTileTypes > 6) $numTileTypes = 6;
     
@@ -47,7 +47,7 @@ try {
     if ($gridHeight > 30) $gridHeight = 30;
     
     // Get tile set and validate it exists with all required files
-    $tileSet = $_POST['tile_set'] ?? $_GET['tile_set'] ?? 'Letters';
+    $tileSet = $_POST['tile_set'] ?? $_GET['tile_set'] ?? 'Squares';
     $tileSetDir = __DIR__ . '/../images/' . basename($tileSet);
     $requiredFiles = ['A.gif', 'As.gif', 'B.gif', 'Bs.gif', 'C.gif', 'Cs.gif', 'D.gif', 'Ds.gif', 'E.gif', 'Es.gif', 'F.gif', 'Fs.gif'];
     
@@ -63,8 +63,16 @@ try {
     }
     
     if (!$isValid) {
-        $tileSet = 'Letters'; // Default fallback
+        $tileSet = 'Squares'; // Default fallback
     }
+    
+    // Get game options
+    $tileTypeMultiplierEnabled = isset($_POST['tile_type_multiplier_enabled']) && $_POST['tile_type_multiplier_enabled'] === '1';
+    $timerEnabled = isset($_POST['timer_enabled']) && $_POST['timer_enabled'] === '1';
+    $timerSeconds = $timerEnabled ? (int)($_POST['timer_seconds'] ?? 60) : 0;
+    if ($timerSeconds < 15) $timerSeconds = 15;
+    if ($timerSeconds > 180) $timerSeconds = 180;
+    $autoSelectEnabled = $timerEnabled && isset($_POST['auto_select_enabled']) && $_POST['auto_select_enabled'] === '1';
     
     // Generate session ID for host
     $hostSession = bin2hex(random_bytes(32));
@@ -82,10 +90,10 @@ try {
     // Create game record
     $stmt = $conn->prepare(
         "INSERT INTO samegame_games 
-         (game_code, host_session, player1_name, game_status, moves_per_turn, num_tile_types, grid_width, grid_height, tile_set, player1_dice_roll, expires_at) 
-         VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?, ?, ?)"
+         (game_code, host_session, player1_name, game_status, moves_per_turn, num_tile_types, grid_width, grid_height, tile_set, tile_type_multiplier_enabled, timer_enabled, timer_seconds, auto_select_enabled, player1_dice_roll, expires_at) 
+         VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
-    $stmt->bind_param("sssiiiisis", $gameCode, $hostSession, $playerName, $movesPerTurn, $numTileTypes, $gridWidth, $gridHeight, $tileSet, $player1DiceRoll, $expiresAt);
+    $stmt->bind_param("sssiiiisiiiiis", $gameCode, $hostSession, $playerName, $movesPerTurn, $numTileTypes, $gridWidth, $gridHeight, $tileSet, $tileTypeMultiplierEnabled, $timerEnabled, $timerSeconds, $autoSelectEnabled, $player1DiceRoll, $expiresAt);
     
     if (!$stmt->execute()) {
         throw new Exception("Failed to create game: " . $conn->error);
@@ -106,6 +114,10 @@ try {
         'grid_width' => $gridWidth,
         'grid_height' => $gridHeight,
         'tile_set' => $tileSet,
+        'tile_type_multiplier_enabled' => $tileTypeMultiplierEnabled,
+        'timer_enabled' => $timerEnabled,
+        'timer_seconds' => $timerSeconds,
+        'auto_select_enabled' => $autoSelectEnabled,
         'dice_roll' => $player1DiceRoll
     ]);
     

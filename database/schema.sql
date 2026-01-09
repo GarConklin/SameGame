@@ -17,10 +17,14 @@ CREATE TABLE IF NOT EXISTS samegame_games (
     current_player INT DEFAULT 1,
     moves_per_turn INT DEFAULT 1,
     current_move_count INT DEFAULT 0,
-    num_tile_types INT DEFAULT 5,
+    num_tile_types INT DEFAULT 4,
     grid_width INT DEFAULT 40,
     grid_height INT DEFAULT 20,
-    tile_set VARCHAR(20) DEFAULT 'Letters',
+    tile_set VARCHAR(20) DEFAULT 'Squares',
+    tile_type_multiplier_enabled BOOLEAN DEFAULT FALSE,
+    timer_enabled BOOLEAN DEFAULT FALSE,
+    timer_seconds INT DEFAULT 60,
+    auto_select_enabled BOOLEAN DEFAULT FALSE,
     game_status ENUM('waiting', 'player1_turn', 'player2_turn', 'completed') DEFAULT 'waiting',
     player1_grid JSON NULL,
     player2_grid JSON NULL,
@@ -29,6 +33,7 @@ CREATE TABLE IF NOT EXISTS samegame_games (
     last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_game_code (game_code),
     INDEX idx_host_session (host_session),
-    INDEX idx_expires_at (expires_at)
+    INDEX idx_expires_at (expires_at),
+    INDEX idx_timer_enabled (timer_enabled)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

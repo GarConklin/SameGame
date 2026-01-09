@@ -29,7 +29,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Set defaults from localStorage, or use standard defaults if not set
     document.getElementById('gridWidthInput').value = savedWidth || 40;
     document.getElementById('gridHeightInput').value = savedHeight || 20;
-    document.getElementById('numTileTypesInput').value = savedTileTypes || 5;
+    document.getElementById('numTileTypesInput').value = savedTileTypes || 4;
     
     // Populate tile set dropdown and set saved value
     populateTileSetSelect(document.getElementById('tileSetSelect'), savedTileSet || 'Squares').then(() => {
@@ -58,6 +58,31 @@ window.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('samegame_username', name);
             // Also update the host name field
             document.getElementById('hostNameInput').value = name;
+        }
+    });
+    
+    // Handle timer checkbox - show/hide timer input
+    const timerCheckbox = document.getElementById('timerCheckbox');
+    const timerInputContainer = document.getElementById('timerInputContainer');
+    const autoSelectCheckbox = document.getElementById('autoSelectCheckbox');
+    
+    timerCheckbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            timerInputContainer.style.display = 'block';
+        } else {
+            timerInputContainer.style.display = 'none';
+            // Disable auto-select if timer is disabled
+            autoSelectCheckbox.checked = false;
+        }
+    });
+    
+    // Auto-select requires timer to be enabled
+    autoSelectCheckbox.addEventListener('change', (e) => {
+        if (e.target.checked && !timerCheckbox.checked) {
+            alert('Auto-select requires timer to be enabled.');
+            e.target.checked = false;
+            timerCheckbox.checked = true;
+            timerInputContainer.style.display = 'block';
         }
     });
 });
@@ -107,7 +132,7 @@ async function createGame() {
     const gridWidth = parseInt(document.getElementById('gridWidthInput').value) || 40;
     const gridHeight = parseInt(document.getElementById('gridHeightInput').value) || 20;
     const movesPerTurn = parseInt(document.getElementById('movesPerTurnInput').value) || 1;
-    const numTileTypes = parseInt(document.getElementById('numTileTypesInput').value) || 5;
+    const numTileTypes = parseInt(document.getElementById('numTileTypesInput').value) || 4;
     const tileSet = document.getElementById('tileSetSelect').value || 'Squares';
     const btn = document.getElementById('createGameBtn');
     
@@ -123,6 +148,15 @@ async function createGame() {
     // Save tile set to localStorage
     localStorage.setItem('samegame_tile_set', tileSet);
     
+    // Get game options
+    const tileTypeMultiplierEnabled = document.getElementById('tileTypeMultiplierCheckbox').checked;
+    const timerEnabled = document.getElementById('timerCheckbox').checked;
+    const timerSeconds = timerEnabled ? parseInt(document.getElementById('timerSecondsInput').value) || 60 : 0;
+    const autoSelectEnabled = timerEnabled && document.getElementById('autoSelectCheckbox').checked;
+    
+    // Validate timer seconds
+    const validTimerSeconds = timerEnabled ? Math.max(15, Math.min(180, timerSeconds)) : 0;
+    
     try {
         const formData = new URLSearchParams();
         formData.append('player_name', playerName);
@@ -131,6 +165,10 @@ async function createGame() {
         formData.append('moves_per_turn', Math.max(1, Math.min(5, movesPerTurn)));
         formData.append('num_tile_types', Math.max(2, Math.min(6, numTileTypes)));
         formData.append('tile_set', tileSet);
+        formData.append('tile_type_multiplier_enabled', tileTypeMultiplierEnabled ? '1' : '0');
+        formData.append('timer_enabled', timerEnabled ? '1' : '0');
+        formData.append('timer_seconds', validTimerSeconds);
+        formData.append('auto_select_enabled', autoSelectEnabled ? '1' : '0');
         
         const response = await fetch(`${window.API_BASE}/create-game.php`, {
             method: 'POST',

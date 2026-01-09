@@ -7,9 +7,9 @@
 class GridGenerator {
     private $gridHeight = 20;
     private $gridWidth = 40;
-    private $numTileTypes = 5;
+    private $numTileTypes = 4;
     
-    public function __construct($numTileTypes = 5, $gridWidth = 40, $gridHeight = 20) {
+    public function __construct($numTileTypes = 4, $gridWidth = 40, $gridHeight = 20) {
         $this->numTileTypes = max(2, min(6, (int)$numTileTypes));
         $this->gridWidth = max(20, min(60, (int)$gridWidth));
         $this->gridHeight = max(10, min(30, (int)$gridHeight));
