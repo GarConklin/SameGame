@@ -48,8 +48,7 @@ window.addEventListener('DOMContentLoaded', () => {
             updateMultiplierTileImages(tileSet);
         });
         
-        // Initial update of multiplier images
-        const initialTileSet = document.getElementById('tileSetSelect').value || 'Squares';
+        // Initial update of multiplier images (reuse initialTileSet from above)
         updateMultiplierTileImages(initialTileSet);
     });
     
