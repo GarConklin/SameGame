@@ -42,9 +42,11 @@ class SameGameMultiplayer {
         this.tileTypeMultiplierEnabled = false;
         this.timerEnabled = false;
         this.timerSeconds = 60;
+        this.timerMode = 'per_move'; // 'per_move' or 'per_turn'
         this.autoSelectEnabled = false;
         this.timerInterval = null;
         this.timeRemaining = 0;
+        this.originalTimerSeconds = 60; // Store original timer seconds for per_turn calculation
         
         // Player info
         this.player1Name = '';
@@ -154,17 +156,21 @@ class SameGameMultiplayer {
                 this.tileTypeMultiplierEnabled = data.tile_type_multiplier_enabled === true || data.tile_type_multiplier_enabled === 1;
                 this.timerEnabled = data.timer_enabled === true || data.timer_enabled === 1;
                 this.timerSeconds = parseInt(data.timer_seconds || 60);
+                this.originalTimerSeconds = this.timerSeconds; // Store original for per_turn calculation
+                this.timerMode = data.timer_mode || 'per_move';
                 this.autoSelectEnabled = data.auto_select_enabled === true || data.auto_select_enabled === 1;
                 
                 console.log('Initial game options loaded:', {
                     tileTypeMultiplierEnabled: this.tileTypeMultiplierEnabled,
                     timerEnabled: this.timerEnabled,
                     timerSeconds: this.timerSeconds,
+                    timerMode: this.timerMode,
                     autoSelectEnabled: this.autoSelectEnabled,
                     numTileTypes: this.numTileTypes,
                     rawData: {
                         tile_type_multiplier_enabled: data.tile_type_multiplier_enabled,
                         timer_enabled: data.timer_enabled,
+                        timer_mode: data.timer_mode,
                         num_tile_types: data.num_tile_types
                     }
                 });
@@ -500,8 +506,12 @@ class SameGameMultiplayer {
         this.bringThemTogether();
         this.updateScore(numberRemoved, tileType);
         
-        // Stop timer after a move
-        this.stopTimer();
+        // Stop timer after a move only for per_move mode
+        // For per_turn mode, timer continues running through all moves
+        if (this.timerMode === 'per_move') {
+            this.stopTimer();
+        }
+        // For per_turn mode, timer continues - it will only stop when turn is complete
     }
     
     updateScore(numberRemoved, tileType = -1) {
@@ -516,7 +526,9 @@ class SameGameMultiplayer {
         // Apply tile type multiplier if enabled
         if (this.tileTypeMultiplierEnabled && tileType >= 0 && tileType < this.numTileTypes) {
             // Multipliers: A(0)=1.0x, B(1)=1.25x, C(2)=1.5x, D(3)=1.75x, E(4)=2.0x, F(5)=2.25x
-            const multipliers = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25];
+            // Only use multipliers for the selected number of tile types
+            const allMultipliers = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25];
+            const multipliers = allMultipliers.slice(0, this.numTileTypes);
             const multiplier = multipliers[tileType] || 1.0;
             newTotal = Math.floor(newTotal * multiplier);
             console.log(`Score calculation: Base=${baseScore}, TileType=${tileType}, Multiplier=${multiplier}x, Final=${newTotal}`);
@@ -620,8 +632,16 @@ class SameGameMultiplayer {
                     this.gameOver = false;
                     this.updateUI();
                     
-                    // Restart timer if enabled and still our turn
-                    if (this.timerEnabled && this.isMyTurn) {
+                    // Restart timer if enabled, still our turn, and timer mode is per_move
+                    // For per_turn mode, timer continues running (don't restart)
+                    // Only restart if no tiles are currently selected (waiting for user input)
+                    if (this.timerEnabled && this.isMyTurn && this.timerMode === 'per_move' && !this.timerInterval && this.theNumberSelected === 0) {
+                        this.startTimer();
+                    }
+                    // For per_turn mode, timer should continue from where it was (already running)
+                    // But only restart if it was stopped (e.g., by auto-select) and we have more moves
+                    if (this.timerEnabled && this.isMyTurn && this.timerMode === 'per_turn' && !this.timerInterval && this.theNumberSelected === 0) {
+                        // Only restart if timer was stopped (e.g., by auto-select) and we have more moves
                         this.startTimer();
                     }
                 }
@@ -656,16 +676,20 @@ class SameGameMultiplayer {
                     this.tileTypeMultiplierEnabled = data.tile_type_multiplier_enabled === true || data.tile_type_multiplier_enabled === 1;
                     this.timerEnabled = data.timer_enabled === true || data.timer_enabled === 1;
                     this.timerSeconds = parseInt(data.timer_seconds || 60);
+                    this.originalTimerSeconds = this.timerSeconds; // Store original for per_turn calculation
+                    this.timerMode = data.timer_mode || 'per_move';
                     this.autoSelectEnabled = data.auto_select_enabled === true || data.auto_select_enabled === 1;
                     
                     console.log('Game options loaded:', {
                         tileTypeMultiplierEnabled: this.tileTypeMultiplierEnabled,
                         timerEnabled: this.timerEnabled,
                         timerSeconds: this.timerSeconds,
+                        timerMode: this.timerMode,
                         autoSelectEnabled: this.autoSelectEnabled,
                         rawData: {
                             tile_type_multiplier_enabled: data.tile_type_multiplier_enabled,
-                            timer_enabled: data.timer_enabled
+                            timer_enabled: data.timer_enabled,
+                            timer_mode: data.timer_mode
                         }
                     });
                     
@@ -851,37 +875,78 @@ class SameGameMultiplayer {
         }
         
         this.stopTimer(); // Stop any existing timer
-        this.timeRemaining = this.timerSeconds;
+        
+        // Calculate timer duration based on mode
+        if (this.timerMode === 'per_turn') {
+            // Per turn: total time = timerSeconds * movesPerTurn
+            // If timer was already running, continue from remaining time
+            // Otherwise, start with full time for the turn
+            if (this.timeRemaining <= 0) {
+                this.timeRemaining = this.originalTimerSeconds * this.movesPerTurn;
+            }
+        } else {
+            // Per move: timer resets to timerSeconds after each move
+            this.timeRemaining = this.originalTimerSeconds;
+        }
+        
         const timerDisplay = document.getElementById('timerDisplay');
         if (timerDisplay) {
             timerDisplay.style.display = 'block';
-            timerDisplay.textContent = `Time: ${this.timeRemaining}s`;
+            const movesRemaining = this.movesPerTurn - this.currentMoveCount;
+            if (this.timerMode === 'per_turn' && movesRemaining > 1) {
+                timerDisplay.textContent = `Time: ${this.timeRemaining}s (${movesRemaining} moves)`;
+            } else {
+                timerDisplay.textContent = `Time: ${this.timeRemaining}s`;
+            }
             timerDisplay.style.color = '#4CAF50'; // Green initially
         }
         
         this.timerInterval = setInterval(() => {
             this.timeRemaining--;
             if (timerDisplay) {
+                const movesRemaining = this.movesPerTurn - this.currentMoveCount;
                 if (this.timeRemaining <= 0) {
-                    timerDisplay.textContent = 'Time: 0s';
+                    if (this.timerMode === 'per_turn' && movesRemaining > 1) {
+                        timerDisplay.textContent = 'Time: 0s (expired)';
+                    } else {
+                        timerDisplay.textContent = 'Time: 0s';
+                    }
                     timerDisplay.style.color = '#f44336'; // Red when expired
                 } else if (this.timeRemaining <= 10) {
-                    timerDisplay.textContent = `Time: ${this.timeRemaining}s`;
+                    if (this.timerMode === 'per_turn' && movesRemaining > 1) {
+                        timerDisplay.textContent = `Time: ${this.timeRemaining}s (${movesRemaining} moves)`;
+                    } else {
+                        timerDisplay.textContent = `Time: ${this.timeRemaining}s`;
+                    }
                     timerDisplay.style.color = '#ff9800'; // Orange when low
                 } else {
-                    timerDisplay.textContent = `Time: ${this.timeRemaining}s`;
+                    if (this.timerMode === 'per_turn' && movesRemaining > 1) {
+                        timerDisplay.textContent = `Time: ${this.timeRemaining}s (${movesRemaining} moves)`;
+                    } else {
+                        timerDisplay.textContent = `Time: ${this.timeRemaining}s`;
+                    }
                     timerDisplay.style.color = '#4CAF50'; // Green when good
                 }
             }
             
             if (this.timeRemaining <= 0) {
                 this.stopTimer();
+                // Prevent timer from restarting until move is complete
                 if (this.autoSelectEnabled && this.isMyTurn && this.theNumberSelected === 0) {
-                    // Auto-select largest scoring group
-                    this.autoSelectLargestGroup();
+                    // Auto-select and execute largest scoring group immediately
+                    // Use setTimeout to ensure timer is fully stopped before executing
+                    setTimeout(() => {
+                        if (this.isMyTurn && this.theNumberSelected === 0) {
+                            this.autoSelectLargestGroup(true); // Pass true to execute immediately
+                        }
+                    }, 100);
                 } else if (this.isMyTurn && this.theNumberSelected > 0) {
                     // If tiles are already selected, just execute the move
-                    this.secondClick();
+                    setTimeout(() => {
+                        if (this.isMyTurn && this.theNumberSelected > 0) {
+                            this.secondClick();
+                        }
+                    }, 100);
                 }
             }
         }, 1000);
@@ -898,7 +963,7 @@ class SameGameMultiplayer {
         }
     }
     
-    autoSelectLargestGroup() {
+    autoSelectLargestGroup(executeImmediately = false) {
         // Find all connected groups and calculate their scores
         let bestGroup = null;
         let bestScore = 0;
@@ -937,7 +1002,7 @@ class SameGameMultiplayer {
             }
         }
         
-        // Select the best group if found
+        // Select and execute the best group if found
         if (bestGroup && bestTileType >= 0) {
             // Clear current selection
             for (let col = 0; col <= this.gridWidth; col++) {
@@ -954,12 +1019,30 @@ class SameGameMultiplayer {
             this.theNumberSelected = bestGroup.length;
             this.paint();
             
-            // Auto-execute the move after a short delay to show the selection
-            setTimeout(() => {
-                if (this.theNumberSelected > 0) {
-                    this.secondClick();
-                }
-            }, 500);
+            // Execute the move - immediately if timer expired, or with delay for visual feedback
+            if (executeImmediately) {
+                // Timer expired - execute immediately to move to next turn
+                console.log('Auto-executing move for timer expiration');
+                // Ensure timer is stopped before executing
+                this.stopTimer();
+                // Use a small delay to ensure UI updates and timer is fully stopped
+                setTimeout(() => {
+                    if (this.theNumberSelected > 0 && this.isMyTurn) {
+                        console.log('Executing auto-selected move');
+                        this.secondClick();
+                    }
+                }, 50);
+            } else {
+                // User triggered or other case - show selection briefly then execute
+                setTimeout(() => {
+                    if (this.theNumberSelected > 0 && this.isMyTurn) {
+                        this.secondClick();
+                    }
+                }, 300);
+            }
+        } else {
+            console.log('No valid group found for auto-select');
+            // No valid move found - turn should end or handle edge case
         }
     }
     
@@ -1001,7 +1084,9 @@ class SameGameMultiplayer {
         
         // Apply tile type multiplier if enabled
         if (this.tileTypeMultiplierEnabled && tileType >= 0 && tileType < this.numTileTypes) {
-            const multipliers = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25];
+            // Only use multipliers for the selected number of tile types
+            const allMultipliers = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25];
+            const multipliers = allMultipliers.slice(0, this.numTileTypes);
             const multiplier = multipliers[tileType] || 1.0;
             baseScore = baseScore * multiplier;
         }
@@ -1026,8 +1111,19 @@ class SameGameMultiplayer {
             playerDisplay.style.color = '#4CAF50';
             
             // Start timer if enabled and not already running
-            if (this.timerEnabled && !this.timerInterval) {
-                this.startTimer();
+            // For per_turn mode, only start timer if it's the first move of the turn (currentMoveCount === 0)
+            // For per_move mode, start timer if no tiles are selected
+            const shouldStartTimer = this.timerEnabled && !this.timerInterval && this.theNumberSelected === 0;
+            if (shouldStartTimer) {
+                if (this.timerMode === 'per_turn') {
+                    // Only start timer at beginning of turn (first move)
+                    if (this.currentMoveCount === 0) {
+                        this.startTimer();
+                    }
+                } else {
+                    // Per move mode - start timer for each move
+                    this.startTimer();
+                }
             }
         } else {
             playerDisplay.textContent = `Waiting for ${this.playerNumber === 1 ? this.player2Name : this.player1Name}...`;

@@ -23,12 +23,36 @@ This will:
 - Remove the database volume (deletes all data)
 - Rebuild and start containers with fresh database using the latest schema.sql
 
+### Quick Schema Check
+To quickly check if your database schema is up to date:
+
+**Using Docker:**
+```bash
+# Check all columns in the table
+docker exec -it samegame_db mysql -uroot -prootpass samegame -e "SHOW COLUMNS FROM samegame_games;"
+
+# Or run the check script
+docker exec -i samegame_db mysql -uroot -prootpass samegame < database/check-schema.sql
+```
+
+**Quick one-liner to check if new columns exist:**
+```bash
+docker exec -it samegame_db mysql -uroot -prootpass samegame -e "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'samegame' AND TABLE_NAME = 'samegame_games' AND COLUMN_NAME IN ('tile_type_multiplier_enabled', 'timer_enabled', 'timer_seconds', 'timer_mode', 'auto_select_enabled');"
+```
+
+If the query returns all 5 column names, your schema is up to date. If any are missing, run the migrations below.
+
 ### Running Migrations (only if you need to preserve existing data)
 If you have existing game data you want to keep, you can run migrations instead:
 
 **Version 1.1.0 Migration (Tile Multipliers, Timer, Auto-Select):**
    ```bash
    docker exec -i samegame_db mysql -uroot -prootpass samegame < database/migrations/add_game_options.sql
+   ```
+
+**Version 1.1.0+ Migration (Timer Mode - Per Move vs Per Turn):**
+   ```bash
+   docker exec -i samegame_db mysql -uroot -prootpass samegame < database/migrations/add_timer_mode.sql
    ```
 
 Or manually:

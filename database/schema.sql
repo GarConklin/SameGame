@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS samegame_games (
     tile_type_multiplier_enabled BOOLEAN DEFAULT FALSE,
     timer_enabled BOOLEAN DEFAULT FALSE,
     timer_seconds INT DEFAULT 60,
+    timer_mode ENUM('per_move', 'per_turn') DEFAULT 'per_move',
     auto_select_enabled BOOLEAN DEFAULT FALSE,
     game_status ENUM('waiting', 'player1_turn', 'player2_turn', 'completed') DEFAULT 'waiting',
     player1_grid JSON NULL,

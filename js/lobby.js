@@ -34,12 +34,23 @@ window.addEventListener('DOMContentLoaded', () => {
     // Populate tile set dropdown and set saved value
     populateTileSetSelect(document.getElementById('tileSetSelect'), savedTileSet || 'Squares').then(() => {
         // Load and display tile preview
-        updateTilePreview(document.getElementById('tileSetSelect').value);
+        const initialTileSet = document.getElementById('tileSetSelect').value || 'Squares';
+        updateTilePreview(initialTileSet);
         
         // Update tile preview when tile set changes
         document.getElementById('tileSetSelect').addEventListener('change', (e) => {
             updateTilePreview(e.target.value);
         });
+        
+        // Update multiplier images when tile types input changes
+        document.getElementById('numTileTypesInput').addEventListener('input', (e) => {
+            const tileSet = document.getElementById('tileSetSelect').value || 'Squares';
+            updateMultiplierTileImages(tileSet);
+        });
+        
+        // Initial update of multiplier images
+        const initialTileSet = document.getElementById('tileSetSelect').value || 'Squares';
+        updateMultiplierTileImages(initialTileSet);
     });
     
     // Save name to localStorage when user types in either name field
@@ -125,6 +136,76 @@ function updateTilePreview(tileSet) {
         };
         previewContainer.appendChild(img);
     });
+    
+    // Update multiplier tile images
+    updateMultiplierTileImages(tileSet);
+}
+
+// Function to update tile images in the multiplier text
+function updateMultiplierTileImages(tileSet) {
+    const multiplierContainer = document.getElementById('multiplierTileImages');
+    if (!multiplierContainer) return;
+    
+    // Get the number of tile types selected
+    const numTileTypes = parseInt(document.getElementById('numTileTypesInput').value) || 4;
+    const maxTileTypes = Math.max(2, Math.min(6, numTileTypes));
+    
+    const tileNames = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const multipliers = ['1x', '1.25x', '1.5x', '1.75x', '2.0x', '2.25x'];
+    const imagePath = `images/${tileSet}/`;
+    const cacheBuster = '?v=' + Date.now();
+    
+    // Clear existing items
+    multiplierContainer.innerHTML = '';
+    
+    // Only show tiles up to the selected number of tile types
+    for (let index = 0; index < maxTileTypes; index++) {
+        const name = tileNames[index];
+        const item = document.createElement('span');
+        item.className = 'multiplier-item';
+        
+        // Create wrapper for tile image
+        const tileWrapper = document.createElement('span');
+        tileWrapper.className = 'multiplier-tile';
+        
+        // Create image element for the tile
+        const img = document.createElement('img');
+        img.src = `${imagePath}${name}.gif${cacheBuster}`;
+        img.alt = `Tile ${name}`;
+        img.title = `Tile ${name} - ${multipliers[index]}`;
+        img.className = 'multiplier-tile-img';
+        
+        // Add fallback text that shows if image fails to load
+        const fallback = document.createElement('span');
+        fallback.className = 'multiplier-tile-fallback';
+        fallback.textContent = name;
+        fallback.style.display = 'none';
+        
+        img.onerror = function() {
+            // If image fails to load, show the letter as fallback
+            this.style.display = 'none';
+            fallback.style.display = 'flex';
+        };
+        
+        img.onload = function() {
+            // Hide fallback when image loads successfully
+            fallback.style.display = 'none';
+        };
+        
+        tileWrapper.appendChild(img);
+        tileWrapper.appendChild(fallback);
+        
+        // Create text for multiplier (e.g., "A=1x")
+        const text = document.createElement('span');
+        text.className = 'multiplier-text';
+        text.textContent = `${name}=${multipliers[index]}`;
+        
+        // Structure: [Tile Image] A=1x
+        item.appendChild(tileWrapper);
+        item.appendChild(text);
+        
+        multiplierContainer.appendChild(item);
+    }
 }
 
 async function createGame() {
@@ -152,6 +233,7 @@ async function createGame() {
     const tileTypeMultiplierEnabled = document.getElementById('tileTypeMultiplierCheckbox').checked;
     const timerEnabled = document.getElementById('timerCheckbox').checked;
     const timerSeconds = timerEnabled ? parseInt(document.getElementById('timerSecondsInput').value) || 60 : 0;
+    const timerMode = timerEnabled ? (document.querySelector('input[name="timerMode"]:checked')?.value || 'per_move') : 'per_move';
     const autoSelectEnabled = timerEnabled && document.getElementById('autoSelectCheckbox').checked;
     
     // Validate timer seconds
@@ -161,6 +243,7 @@ async function createGame() {
         tileTypeMultiplierEnabled,
         timerEnabled,
         timerSeconds: validTimerSeconds,
+        timerMode,
         autoSelectEnabled
     });
     
@@ -175,6 +258,7 @@ async function createGame() {
         formData.append('tile_type_multiplier_enabled', tileTypeMultiplierEnabled ? '1' : '0');
         formData.append('timer_enabled', timerEnabled ? '1' : '0');
         formData.append('timer_seconds', validTimerSeconds);
+        formData.append('timer_mode', timerMode);
         formData.append('auto_select_enabled', autoSelectEnabled ? '1' : '0');
         
         const response = await fetch(`${window.API_BASE}/create-game.php`, {

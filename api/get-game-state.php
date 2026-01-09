@@ -30,8 +30,24 @@ try {
     $result = $conn->query("SHOW COLUMNS FROM samegame_games LIKE 'tile_type_multiplier_enabled'");
     $hasNewColumns = ($result && $result->num_rows > 0);
     
+    // Check if timer_mode column exists
+    $result = $conn->query("SHOW COLUMNS FROM samegame_games LIKE 'timer_mode'");
+    $hasTimerMode = ($result && $result->num_rows > 0);
+    
     // Get game state - use different SELECT based on whether new columns exist
-    if ($hasNewColumns) {
+    if ($hasNewColumns && $hasTimerMode) {
+        // All new columns including timer_mode exist
+        $stmt = $conn->prepare(
+            "SELECT id, host_session, player2_session, player1_name, player2_name,
+                    player1_score, player2_score, current_player, game_status,
+                    moves_per_turn, current_move_count, num_tile_types, grid_width, grid_height, tile_set,
+                    tile_type_multiplier_enabled, timer_enabled, timer_seconds, timer_mode, auto_select_enabled,
+                    player1_grid, player2_grid, player1_dice_roll, player2_dice_roll
+             FROM samegame_games 
+             WHERE game_code = ? AND (host_session = ? OR player2_session = ?)"
+        );
+    } else if ($hasNewColumns) {
+        // New columns exist but not timer_mode
         $stmt = $conn->prepare(
             "SELECT id, host_session, player2_session, player1_name, player2_name,
                     player1_score, player2_score, current_player, game_status,
@@ -141,6 +157,7 @@ try {
         'tile_type_multiplier_enabled' => $hasNewColumns ? (bool)($game['tile_type_multiplier_enabled'] ?? false) : false,
         'timer_enabled' => $hasNewColumns ? (bool)($game['timer_enabled'] ?? false) : false,
         'timer_seconds' => $hasNewColumns ? (int)($game['timer_seconds'] ?? 60) : 60,
+        'timer_mode' => ($hasNewColumns && isset($game['timer_mode'])) ? $game['timer_mode'] : 'per_move',
         'auto_select_enabled' => $hasNewColumns ? (bool)($game['auto_select_enabled'] ?? false) : false,
         'your_grid' => $playerNumber === 1 ? $player1Grid : $player2Grid,
         'opponent_score' => $playerNumber === 1 ? (int)$game['player2_score'] : (int)$game['player1_score'],

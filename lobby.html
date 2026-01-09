@@ -59,13 +59,18 @@
                 <div id="tilePreview" class="tile-preview"></div>
             </div>
             
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc;">
+            <div class="game-options-section">
                 <h3 style="margin-top: 0; margin-bottom: 15px;">Game Options</h3>
                 
                 <div class="checkbox-option">
                     <label class="checkbox-label">
                         <input type="checkbox" id="tileTypeMultiplierCheckbox" class="checkbox-input">
-                        <span class="checkbox-text">Enable Tile Type Multipliers (A=1x, B=1.25x, C=1.5x, D=1.75x, E=2.0x, F=2.25x)</span>
+                        <span class="checkbox-text">
+                            <span>Enable Tile Type Multipliers:</span>
+                            <span class="multiplier-list" id="multiplierTileImages">
+                                <!-- Tile images will be populated by JavaScript -->
+                            </span>
+                        </span>
                     </label>
                 </div>
                 
@@ -77,6 +82,17 @@
                     <div id="timerInputContainer" class="timer-input-container" style="display: none;">
                         <label for="timerSecondsInput" class="timer-label">Timer (15-180 seconds):</label>
                         <input type="number" id="timerSecondsInput" min="15" max="180" value="60" class="timer-input">
+                        <div class="timer-mode-container" style="margin-top: 10px;">
+                            <label class="timer-mode-label">Timer Mode:</label>
+                            <label class="radio-label">
+                                <input type="radio" name="timerMode" id="timerModePerMove" value="per_move" checked>
+                                <span>Per Move (timer resets after each move)</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="timerMode" id="timerModePerTurn" value="per_turn">
+                                <span>Per Turn (one timer for entire turn)</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 
