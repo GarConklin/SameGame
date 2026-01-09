@@ -26,9 +26,8 @@ class SameGame {
         this.redoGrid = [];
         this.selectionGrid = [];
         
-        // High scores
-        this.highScoresValuesTable = new Array(10).fill(0);
-        this.highScoresNamesTable = new Array(10).fill('');
+        // High scores - now stores objects with score, name, and config
+        this.highScoresTable = new Array(10).fill(null);
         
         // Images
         this.images = {};
@@ -558,12 +557,20 @@ class SameGame {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
         this.ctx.fillStyle = '#000000';
-        this.ctx.font = '12px Arial';
+        this.ctx.font = '11px Arial';
         let y = 18;
         for (let i = 0; i < 10; i++) {
-            if (this.highScoresNamesTable[i]) {
-                const name = this.highScoresNamesTable[i].trim();
-                this.ctx.fillText(`${name} ${this.highScoresValuesTable[i]}`, 10, y);
+            if (this.highScoresTable[i]) {
+                const entry = this.highScoresTable[i];
+                const name = entry.name.trim();
+                const score = entry.score;
+                const config = entry.config || {};
+                const gridSize = config.gridWidth && config.gridHeight ? 
+                    `${config.gridWidth}x${config.gridHeight}` : '?';
+                const tileTypes = config.numTileTypes || '?';
+                
+                // Display: Name Score (GridSize, Tiles)
+                this.ctx.fillText(`${name} ${score} (${gridSize}, ${tileTypes} tiles)`, 10, y);
                 y += 12;
             }
         }
@@ -574,11 +581,54 @@ class SameGame {
             const saved = localStorage.getItem('samegame_highscores');
             if (saved) {
                 const data = JSON.parse(saved);
-                this.highScoresValuesTable = data.scores || new Array(10).fill(0);
-                this.highScoresNamesTable = data.names || new Array(10).fill('');
+                
+                // Check if it's the new format (array of objects) or old format (separate arrays)
+                if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
+                    // New format
+                    this.highScoresTable = data.slice(0, 10);
+                    while (this.highScoresTable.length < 10) {
+                        this.highScoresTable.push(null);
+                    }
+                } else if (data.scores && data.names) {
+                    // Old format - migrate to new format
+                    this.highScoresTable = [];
+                    for (let i = 0; i < 10; i++) {
+                        if (data.names[i] || data.scores[i] > 0) {
+                            this.highScoresTable.push({
+                                name: data.names[i] || '',
+                                score: data.scores[i] || 0,
+                                config: {
+                                    gridWidth: 40, // Default - unknown
+                                    gridHeight: 20,
+                                    numTileTypes: 4,
+                                    tileSet: 'Squares'
+                                }
+                            });
+                        } else {
+                            this.highScoresTable.push(null);
+                        }
+                    }
+                    // Save migrated format
+                    this.saveHighScoresToStorage();
+                } else {
+                    this.highScoresTable = new Array(10).fill(null);
+                }
+            } else {
+                this.highScoresTable = new Array(10).fill(null);
             }
         } catch (e) {
             console.error('Error loading high scores:', e);
+            this.highScoresTable = new Array(10).fill(null);
+        }
+    }
+    
+    saveHighScoresToStorage() {
+        try {
+            // Save only non-null entries
+            const toSave = this.highScoresTable.filter(entry => entry !== null);
+            localStorage.setItem('samegame_highscores', JSON.stringify(toSave));
+        } catch (e) {
+            console.error('Error saving high scores:', e);
         }
     }
     
@@ -586,32 +636,37 @@ class SameGame {
         this.getHighScores();
         
         let loopPosition = 0;
-        while (loopPosition < 10 && this.highScoresValuesTable[loopPosition] >= this.myScore) {
+        while (loopPosition < 10 && 
+               this.highScoresTable[loopPosition] !== null && 
+               this.highScoresTable[loopPosition].score >= this.myScore) {
             loopPosition++;
         }
         
-        if (loopPosition < 10 && this.myScore > this.highScoresValuesTable[loopPosition]) {
+        if (loopPosition < 10 && 
+            (this.highScoresTable[loopPosition] === null || 
+             this.myScore > this.highScoresTable[loopPosition].score)) {
             // Insert new high score
             const newName = this.userName.substring(0, 50);
+            const newEntry = {
+                name: newName,
+                score: this.myScore,
+                config: {
+                    gridWidth: this.gridWidth,
+                    gridHeight: this.gridHeight,
+                    numTileTypes: this.numTileTypes,
+                    tileSet: this.tileSet
+                }
+            };
             
             // Shift scores down
             for (let i = 9; i > loopPosition; i--) {
-                this.highScoresValuesTable[i] = this.highScoresValuesTable[i - 1];
-                this.highScoresNamesTable[i] = this.highScoresNamesTable[i - 1];
+                this.highScoresTable[i] = this.highScoresTable[i - 1];
             }
             
-            this.highScoresValuesTable[loopPosition] = this.myScore;
-            this.highScoresNamesTable[loopPosition] = newName;
+            this.highScoresTable[loopPosition] = newEntry;
             
             // Save to localStorage
-            try {
-                localStorage.setItem('samegame_highscores', JSON.stringify({
-                    scores: this.highScoresValuesTable,
-                    names: this.highScoresNamesTable
-                }));
-            } catch (e) {
-                console.error('Error saving high scores:', e);
-            }
+            this.saveHighScoresToStorage();
         }
     }
     
@@ -621,9 +676,18 @@ class SameGame {
         const list = document.getElementById('highScoreList');
         list.innerHTML = '<ol>';
         for (let i = 0; i < 10; i++) {
-            if (this.highScoresNamesTable[i] || this.highScoresValuesTable[i] > 0) {
-                const name = (this.highScoresNamesTable[i] || '').trim();
-                list.innerHTML += `<li>${name}: ${this.highScoresValuesTable[i]}</li>`;
+            if (this.highScoresTable[i]) {
+                const entry = this.highScoresTable[i];
+                const name = entry.name.trim();
+                const score = entry.score;
+                const config = entry.config || {};
+                const gridSize = config.gridWidth && config.gridHeight ? 
+                    `${config.gridWidth}x${config.gridHeight}` : '?';
+                const tileTypes = config.numTileTypes || '?';
+                const tileSet = config.tileSet || '?';
+                
+                list.innerHTML += `<li><strong>${name}:</strong> ${score} points<br>
+                    <small style="color: #666;">Grid: ${gridSize}, ${tileTypes} tile types, ${tileSet}</small></li>`;
             }
         }
         list.innerHTML += '</ol>';
