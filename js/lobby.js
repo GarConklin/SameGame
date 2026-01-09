@@ -157,6 +157,13 @@ async function createGame() {
     // Validate timer seconds
     const validTimerSeconds = timerEnabled ? Math.max(15, Math.min(180, timerSeconds)) : 0;
     
+    console.log('Creating game with options:', {
+        tileTypeMultiplierEnabled,
+        timerEnabled,
+        timerSeconds: validTimerSeconds,
+        autoSelectEnabled
+    });
+    
     try {
         const formData = new URLSearchParams();
         formData.append('player_name', playerName);

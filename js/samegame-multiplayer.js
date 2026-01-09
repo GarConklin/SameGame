@@ -156,6 +156,19 @@ class SameGameMultiplayer {
                 this.timerSeconds = parseInt(data.timer_seconds || 60);
                 this.autoSelectEnabled = data.auto_select_enabled === true || data.auto_select_enabled === 1;
                 
+                console.log('Initial game options loaded:', {
+                    tileTypeMultiplierEnabled: this.tileTypeMultiplierEnabled,
+                    timerEnabled: this.timerEnabled,
+                    timerSeconds: this.timerSeconds,
+                    autoSelectEnabled: this.autoSelectEnabled,
+                    numTileTypes: this.numTileTypes,
+                    rawData: {
+                        tile_type_multiplier_enabled: data.tile_type_multiplier_enabled,
+                        timer_enabled: data.timer_enabled,
+                        num_tile_types: data.num_tile_types
+                    }
+                });
+                
                 // Check if tile set changed - need to reload images
                 const tileSetChanged = this.tileSet !== newTileSet;
                 this.tileSet = newTileSet;
@@ -498,12 +511,17 @@ class SameGameMultiplayer {
             newTotal = newTotal + (myCount++ - 3) * 2 + 2;
         }
         
+        const baseScore = newTotal;
+        
         // Apply tile type multiplier if enabled
         if (this.tileTypeMultiplierEnabled && tileType >= 0 && tileType < this.numTileTypes) {
             // Multipliers: A(0)=1.0x, B(1)=1.25x, C(2)=1.5x, D(3)=1.75x, E(4)=2.0x, F(5)=2.25x
             const multipliers = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25];
             const multiplier = multipliers[tileType] || 1.0;
             newTotal = Math.floor(newTotal * multiplier);
+            console.log(`Score calculation: Base=${baseScore}, TileType=${tileType}, Multiplier=${multiplier}x, Final=${newTotal}`);
+        } else {
+            console.log(`Score calculation: Base=${baseScore}, TileType=${tileType}, MultipliersEnabled=${this.tileTypeMultiplierEnabled}, Final=${newTotal}`);
         }
         
         this.myScore += newTotal;
@@ -639,6 +657,17 @@ class SameGameMultiplayer {
                     this.timerEnabled = data.timer_enabled === true || data.timer_enabled === 1;
                     this.timerSeconds = parseInt(data.timer_seconds || 60);
                     this.autoSelectEnabled = data.auto_select_enabled === true || data.auto_select_enabled === 1;
+                    
+                    console.log('Game options loaded:', {
+                        tileTypeMultiplierEnabled: this.tileTypeMultiplierEnabled,
+                        timerEnabled: this.timerEnabled,
+                        timerSeconds: this.timerSeconds,
+                        autoSelectEnabled: this.autoSelectEnabled,
+                        rawData: {
+                            tile_type_multiplier_enabled: data.tile_type_multiplier_enabled,
+                            timer_enabled: data.timer_enabled
+                        }
+                    });
                     
                     // Check if game was restarted (status changed from completed to player1_turn or player2_turn)
                     const wasCompleted = (oldGameStatus === 'completed');

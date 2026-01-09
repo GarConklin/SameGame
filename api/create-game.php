@@ -74,6 +74,13 @@ try {
     if ($timerSeconds > 180) $timerSeconds = 180;
     $autoSelectEnabled = $timerEnabled && isset($_POST['auto_select_enabled']) && $_POST['auto_select_enabled'] === '1';
     
+    // Debug logging
+    error_log("Create game options: tileTypeMultiplierEnabled=" . ($tileTypeMultiplierEnabled ? '1' : '0') . 
+              ", timerEnabled=" . ($timerEnabled ? '1' : '0') . 
+              ", timerSeconds=" . $timerSeconds . 
+              ", autoSelectEnabled=" . ($autoSelectEnabled ? '1' : '0') .
+              ", POST[tile_type_multiplier_enabled]=" . ($_POST['tile_type_multiplier_enabled'] ?? 'not set'));
+    
     // Generate session ID for host
     $hostSession = bin2hex(random_bytes(32));
     
@@ -98,7 +105,11 @@ try {
              (game_code, host_session, player1_name, game_status, moves_per_turn, num_tile_types, grid_width, grid_height, tile_set, tile_type_multiplier_enabled, timer_enabled, timer_seconds, auto_select_enabled, player1_dice_roll, expires_at) 
              VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->bind_param("sssiiiisiiiiis", $gameCode, $hostSession, $playerName, $movesPerTurn, $numTileTypes, $gridWidth, $gridHeight, $tileSet, $tileTypeMultiplierEnabled, $timerEnabled, $timerSeconds, $autoSelectEnabled, $player1DiceRoll, $expiresAt);
+        // Convert booleans to integers (0 or 1) for MySQL
+        $tileTypeMultiplierEnabledInt = $tileTypeMultiplierEnabled ? 1 : 0;
+        $timerEnabledInt = $timerEnabled ? 1 : 0;
+        $autoSelectEnabledInt = $autoSelectEnabled ? 1 : 0;
+        $stmt->bind_param("sssiiiisiiiiis", $gameCode, $hostSession, $playerName, $movesPerTurn, $numTileTypes, $gridWidth, $gridHeight, $tileSet, $tileTypeMultiplierEnabledInt, $timerEnabledInt, $timerSeconds, $autoSelectEnabledInt, $player1DiceRoll, $expiresAt);
     } else {
         // Fallback for databases without the new columns (use defaults)
         $stmt = $conn->prepare(

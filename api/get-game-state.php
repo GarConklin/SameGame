@@ -69,6 +69,16 @@ try {
     $game = $result->fetch_assoc();
     $stmt->close();
     
+    // Debug logging for game options
+    if ($hasNewColumns) {
+        error_log("Get game state: tile_type_multiplier_enabled=" . ($game['tile_type_multiplier_enabled'] ?? 'null') . 
+                  " (type: " . gettype($game['tile_type_multiplier_enabled'] ?? null) . ")" .
+                  ", timer_enabled=" . ($game['timer_enabled'] ?? 'null') .
+                  ", num_tile_types=" . ($game['num_tile_types'] ?? 'null'));
+    } else {
+        error_log("Get game state: New columns not found in database - using defaults");
+    }
+    
     // Determine which player this session is
     // Use strict comparison and trim to avoid whitespace issues
     $hostSession = trim($game['host_session']);
@@ -128,10 +138,10 @@ try {
         'grid_width' => (int)$game['grid_width'],
         'grid_height' => (int)$game['grid_height'],
         'tile_set' => $game['tile_set'] ?? 'Squares',
-        'tile_type_multiplier_enabled' => (bool)($game['tile_type_multiplier_enabled'] ?? false),
-        'timer_enabled' => (bool)($game['timer_enabled'] ?? false),
-        'timer_seconds' => (int)($game['timer_seconds'] ?? 60),
-        'auto_select_enabled' => (bool)($game['auto_select_enabled'] ?? false),
+        'tile_type_multiplier_enabled' => $hasNewColumns ? (bool)($game['tile_type_multiplier_enabled'] ?? false) : false,
+        'timer_enabled' => $hasNewColumns ? (bool)($game['timer_enabled'] ?? false) : false,
+        'timer_seconds' => $hasNewColumns ? (int)($game['timer_seconds'] ?? 60) : 60,
+        'auto_select_enabled' => $hasNewColumns ? (bool)($game['auto_select_enabled'] ?? false) : false,
         'your_grid' => $playerNumber === 1 ? $player1Grid : $player2Grid,
         'opponent_score' => $playerNumber === 1 ? (int)$game['player2_score'] : (int)$game['player1_score'],
         'player1_dice_roll' => $game['player1_dice_roll'] !== null ? (int)$game['player1_dice_roll'] : null,
