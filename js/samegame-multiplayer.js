@@ -954,8 +954,10 @@ class SameGameMultiplayer {
                         setTimeout(() => {
                             if (this.isMyTurn && selectedCount > 0) {
                                 console.log('Executing user-selected move on timer expiration');
-                                // Execute the move - secondClick will call submitScore
+                                // Execute the move - secondClick removes tiles and updates score
                                 this.secondClick();
+                                // Call checkForEndGame to submit score and check if turn is complete
+                                this.checkForEndGame();
                                 // Clear flag after submitScore completes (it's async, so wait longer)
                                 // submitScore calls updateUI which might restart timer, so keep flag set
                                 setTimeout(() => {
