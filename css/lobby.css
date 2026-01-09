@@ -66,6 +66,18 @@
     box-sizing: border-box;
 }
 
+/* Ensure number input spinners are visible */
+input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1; /* Show spinners in Chrome/Safari/Edge */
+    height: 20px;
+    cursor: pointer;
+}
+
 .lobby-section button {
     width: 100%;
     padding: 12px;
@@ -227,6 +239,21 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
+}
+
+/* Ensure number input spinners are visible */
+/* Show spinner buttons in WebKit browsers (Chrome, Safari, Edge) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1 !important;
+    height: 20px;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Firefox - ensure spinner is visible */
+input[type="number"] {
+    -moz-appearance: number-input; /* Show spinner in Firefox */
 }
 
 .timer-mode-container {

@@ -36,6 +36,7 @@ window.addEventListener('DOMContentLoaded', () => {
         // Load and display tile preview
         const initialTileSet = document.getElementById('tileSetSelect').value || 'Squares';
         updateTilePreview(initialTileSet);
+        // Note: updateTilePreview already calls updateMultiplierTileImages, so no need to call it again
         
         // Update tile preview when tile set changes
         document.getElementById('tileSetSelect').addEventListener('change', (e) => {
@@ -47,9 +48,6 @@ window.addEventListener('DOMContentLoaded', () => {
             const tileSet = document.getElementById('tileSetSelect').value || 'Squares';
             updateMultiplierTileImages(tileSet);
         });
-        
-        // Initial update of multiplier images (reuse initialTileSet from above)
-        updateMultiplierTileImages(initialTileSet);
     });
     
     // Save name to localStorage when user types in either name field
