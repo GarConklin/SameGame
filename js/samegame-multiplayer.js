@@ -47,6 +47,7 @@ class SameGameMultiplayer {
         this.timerInterval = null;
         this.timeRemaining = 0;
         this.originalTimerSeconds = 60; // Store original timer seconds for per_turn calculation
+        this.isAutoSelecting = false; // Flag to prevent timer restart during auto-select execution
         
         // Player info
         this.player1Name = '';
@@ -623,6 +624,8 @@ class SameGameMultiplayer {
                     this.isMyTurn = false;
                     this.gameOver = false; // Reset for next player
                     this.currentMoveCount = 0; // Will be reset when it becomes our turn again
+                    this.isAutoSelecting = false; // Clear auto-select flag since turn is over
+                    this.stopTimer(); // Ensure timer is stopped
                     this.updateUI();
                     // Show waiting message
                     document.getElementById('waitingModal').style.display = 'block';
@@ -632,17 +635,21 @@ class SameGameMultiplayer {
                     this.gameOver = false;
                     this.updateUI();
                     
-                    // Restart timer if enabled, still our turn, and timer mode is per_move
-                    // For per_turn mode, timer continues running (don't restart)
-                    // Only restart if no tiles are currently selected (waiting for user input)
-                    if (this.timerEnabled && this.isMyTurn && this.timerMode === 'per_move' && !this.timerInterval && this.theNumberSelected === 0) {
-                        this.startTimer();
-                    }
-                    // For per_turn mode, timer should continue from where it was (already running)
-                    // But only restart if it was stopped (e.g., by auto-select) and we have more moves
-                    if (this.timerEnabled && this.isMyTurn && this.timerMode === 'per_turn' && !this.timerInterval && this.theNumberSelected === 0) {
-                        // Only restart if timer was stopped (e.g., by auto-select) and we have more moves
-                        this.startTimer();
+                    // DO NOT restart timer if we just did an auto-select move - wait for turn to end or next manual move
+                    // Only restart timer if we're not in the middle of auto-select execution
+                    if (!this.isAutoSelecting) {
+                        // Restart timer if enabled, still our turn, and timer mode is per_move
+                        // For per_turn mode, timer continues running (don't restart)
+                        // Only restart if no tiles are currently selected (waiting for user input)
+                        if (this.timerEnabled && this.isMyTurn && this.timerMode === 'per_move' && !this.timerInterval && this.theNumberSelected === 0) {
+                            this.startTimer();
+                        }
+                        // For per_turn mode, timer should continue from where it was (already running)
+                        // But only restart if it was stopped (e.g., by auto-select) and we have more moves
+                        if (this.timerEnabled && this.isMyTurn && this.timerMode === 'per_turn' && !this.timerInterval && this.theNumberSelected === 0) {
+                            // Only restart if timer was stopped (e.g., by auto-select) and we have more moves
+                            this.startTimer();
+                        }
                     }
                 }
             } else {
@@ -932,15 +939,17 @@ class SameGameMultiplayer {
             if (this.timeRemaining <= 0) {
                 this.stopTimer();
                 // Prevent timer from restarting until move is complete
-                if (this.autoSelectEnabled && this.isMyTurn && this.theNumberSelected === 0) {
+                if (this.autoSelectEnabled && this.isMyTurn && this.theNumberSelected === 0 && !this.isAutoSelecting) {
+                    // Set flag to prevent timer restart during auto-select
+                    this.isAutoSelecting = true;
                     // Auto-select and execute largest scoring group immediately
                     // Use setTimeout to ensure timer is fully stopped before executing
                     setTimeout(() => {
-                        if (this.isMyTurn && this.theNumberSelected === 0) {
+                        if (this.isMyTurn && this.theNumberSelected === 0 && this.isAutoSelecting) {
                             this.autoSelectLargestGroup(true); // Pass true to execute immediately
                         }
                     }, 100);
-                } else if (this.isMyTurn && this.theNumberSelected > 0) {
+                } else if (this.isMyTurn && this.theNumberSelected > 0 && !this.isAutoSelecting) {
                     // If tiles are already selected, just execute the move
                     setTimeout(() => {
                         if (this.isMyTurn && this.theNumberSelected > 0) {
@@ -964,6 +973,11 @@ class SameGameMultiplayer {
     }
     
     autoSelectLargestGroup(executeImmediately = false) {
+        // Prevent multiple simultaneous auto-select calls
+        if (this.isAutoSelecting && !executeImmediately) {
+            return;
+        }
+        
         // Find all connected groups and calculate their scores
         let bestGroup = null;
         let bestScore = 0;
@@ -1023,26 +1037,43 @@ class SameGameMultiplayer {
             if (executeImmediately) {
                 // Timer expired - execute immediately to move to next turn
                 console.log('Auto-executing move for timer expiration');
-                // Ensure timer is stopped before executing
+                // Ensure timer is stopped and won't restart
                 this.stopTimer();
                 // Use a small delay to ensure UI updates and timer is fully stopped
                 setTimeout(() => {
-                    if (this.theNumberSelected > 0 && this.isMyTurn) {
+                    if (this.theNumberSelected > 0 && this.isMyTurn && this.isAutoSelecting) {
                         console.log('Executing auto-selected move');
+                        // Don't clear the flag yet - keep it until after submitScore completes
+                        // This prevents timer from restarting during move submission
                         this.secondClick();
+                        // Clear the flag after a short delay to ensure submitScore has completed
+                        setTimeout(() => {
+                            this.isAutoSelecting = false;
+                        }, 200);
+                    } else {
+                        // If something went wrong, clear the flag anyway
+                        this.isAutoSelecting = false;
                     }
                 }, 50);
             } else {
                 // User triggered or other case - show selection briefly then execute
                 setTimeout(() => {
                     if (this.theNumberSelected > 0 && this.isMyTurn) {
+                        this.isAutoSelecting = false; // Clear flag after execution
                         this.secondClick();
+                    } else {
+                        this.isAutoSelecting = false; // Clear flag if move didn't happen
                     }
                 }, 300);
             }
         } else {
             console.log('No valid group found for auto-select');
-            // No valid move found - turn should end or handle edge case
+            // No valid move found - clear flag and end turn or handle edge case
+            this.isAutoSelecting = false;
+            // If no valid move, the turn should end - submit score to end turn
+            if (this.isMyTurn) {
+                this.submitScore();
+            }
         }
     }
     
@@ -1113,7 +1144,8 @@ class SameGameMultiplayer {
             // Start timer if enabled and not already running
             // For per_turn mode, only start timer if it's the first move of the turn (currentMoveCount === 0)
             // For per_move mode, start timer if no tiles are selected
-            const shouldStartTimer = this.timerEnabled && !this.timerInterval && this.theNumberSelected === 0;
+            // DO NOT start timer if we're in the middle of auto-select execution
+            const shouldStartTimer = this.timerEnabled && !this.timerInterval && this.theNumberSelected === 0 && !this.isAutoSelecting;
             if (shouldStartTimer) {
                 if (this.timerMode === 'per_turn') {
                     // Only start timer at beginning of turn (first move)
